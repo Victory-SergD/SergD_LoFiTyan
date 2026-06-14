@@ -18,12 +18,19 @@
   function toggleRain() {
     if (isRaining) {
       rain.pause();
+      isRaining = false;
     } else {
       rain.loop = true;
       rain.volume = currentVolume;
-      rain.play();
+      rain
+        .play()
+        .then(() => {
+          isRaining = true;
+        })
+        .catch(() => {
+          isRaining = false;
+        });
     }
-    isRaining = !isRaining;
   }
 
   onMount(() => {

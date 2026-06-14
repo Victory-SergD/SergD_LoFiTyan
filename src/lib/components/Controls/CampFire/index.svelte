@@ -10,13 +10,19 @@
   function toggleFire() {
     if (isFire) {
       fire.pause();
+      isFire = false;
     } else {
-      fire.play();
       fire.loop = true;
       fire.volume = volume;
+      fire
+        .play()
+        .then(() => {
+          isFire = true;
+        })
+        .catch(() => {
+          isFire = false;
+        });
     }
-
-    isFire = !isFire;
   }
 
   // Shortuct to toggle fire with "F" key

@@ -10,13 +10,19 @@
   function toggleThunder() {
     if (isStorming) {
       storm.pause();
+      isStorming = false;
     } else {
-      storm.play();
       storm.loop = true;
       storm.volume = volume;
+      storm
+        .play()
+        .then(() => {
+          isStorming = true;
+        })
+        .catch(() => {
+          isStorming = false;
+        });
     }
-
-    isStorming = !isStorming;
   }
 
   // Shortuct to toggle storm with "S" key

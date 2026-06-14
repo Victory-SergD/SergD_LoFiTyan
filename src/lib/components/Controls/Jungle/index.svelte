@@ -10,13 +10,19 @@
   function toggleJungle() {
     if (isActive) {
       jungle.pause();
+      isActive = false;
     } else {
-      jungle.play();
       jungle.loop = true;
       jungle.volume = volume;
+      jungle
+        .play()
+        .then(() => {
+          isActive = true;
+        })
+        .catch(() => {
+          isActive = false;
+        });
     }
-
-    isActive = !isActive;
   }
 
   // Shortuct to toggle jungle with "D" key
