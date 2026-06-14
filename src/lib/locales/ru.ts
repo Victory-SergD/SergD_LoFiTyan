@@ -46,6 +46,7 @@ export const ru = {
         tagline: 'Создай свою атмосферу — Lofi Engine задаёт настроение.',
         buttons: {
             show_next_time: 'Показывать при запуске',
+            shown_next_time: 'Будет показано при запуске',
         },
         shortcuts: {
             title: 'Горячие клавиши',

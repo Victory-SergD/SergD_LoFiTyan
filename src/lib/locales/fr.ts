@@ -48,6 +48,7 @@ export const fr: Translations = {
         tagline: 'Créez votre propre atmosphère, Lofi Engine met l\'ambiance.',
         buttons: {
             show_next_time: 'Afficher au prochain démarrage',
+            shown_next_time: 'S\'affichera au prochain démarrage',
         },
         shortcuts: {
             title: 'Raccourcis',

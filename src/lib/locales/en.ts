@@ -46,6 +46,7 @@ export const en = {
         tagline: 'Create your own atmosphere, Lofi Engine sets the mood.',
         buttons: {
             show_next_time: 'Show on start next time',
+            shown_next_time: 'Will show on next start',
         },
         shortcuts: {
             title: 'Shortcuts',

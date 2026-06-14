@@ -48,6 +48,7 @@ export const hi: Translations = {
         tagline: 'अपना खुद का माहौल बनाएं, Lofi Engine मूड सेट करता है।',
         buttons: {
             show_next_time: 'अगली बार शुरू होने पर दिखाएं',
+            shown_next_time: 'अगली बार शुरू होने पर दिखाया जाएगा',
         },
         shortcuts: {
             title: 'शॉर्टकट',

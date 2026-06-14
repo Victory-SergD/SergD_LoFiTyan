@@ -48,6 +48,7 @@ export const ja: Translations = {
         tagline: 'あなただけの雰囲気を作り出す、Lofi Engineがムードを演出します。',
         buttons: {
             show_next_time: '次回起動時に表示する',
+            shown_next_time: '次回起動時に表示されます',
         },
         shortcuts: {
             title: 'ショートカット',

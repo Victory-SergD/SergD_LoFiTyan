@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IconEye, IconX } from "@tabler/icons-svelte";
+  import { IconEye, IconEyeOff, IconX } from "@tabler/icons-svelte";
   import ShortCuts from "./ShortCuts.svelte";
   import SocialLinks from "./SocialLinks.svelte";
   import { onMount } from "svelte";
@@ -7,14 +7,19 @@
 
   let visible = false;
 
+  // Reflects "will the info box show on next launch?":
+  // true when the shownBefore-info flag is ABSENT.
+  let showOnStart = !localStorage.getItem("shownBefore-info");
+
   function toggleInfoBox() {
     visible = !visible;
   }
 
   // First time, show info box
-  if (!localStorage.getItem("shownBefore-info")) {
+  if (showOnStart) {
     toggleInfoBox();
     localStorage.setItem("shownBefore-info", "true");
+    showOnStart = false;
   }
 
   // Listen to escape key to close info box
@@ -28,8 +33,15 @@
     false,
   );
 
-  function showNextTime() {
-    localStorage.removeItem("shownBefore-info");
+  function toggleShowOnStart() {
+    showOnStart = !showOnStart;
+    if (showOnStart) {
+      // box WILL show next launch -> remove the "already shown" flag
+      localStorage.removeItem("shownBefore-info");
+    } else {
+      // box will NOT show next launch
+      localStorage.setItem("shownBefore-info", "true");
+    }
   }
 
   onMount(() => {
@@ -49,10 +61,17 @@
         </button>
         <button
           id="show-btn"
-          data-tooltip={$t.info.buttons.show_next_time}
-          on:click={showNextTime}
+          class:active={showOnStart}
+          data-tooltip={showOnStart
+            ? $t.info.buttons.shown_next_time
+            : $t.info.buttons.show_next_time}
+          on:click={toggleShowOnStart}
         >
-          <IconEye color="white" size={17} />
+          {#if showOnStart}
+            <IconEye color="white" size={17} />
+          {:else}
+            <IconEyeOff color="white" size={17} />
+          {/if}
         </button>
         <div id="app-info">
           <img id="app-logo" src="LofiEngine.png" alt="" />

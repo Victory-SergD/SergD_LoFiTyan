@@ -48,6 +48,7 @@ export const zh: Translations = {
         tagline: '创造属于你的氛围，Lofi Engine 设定心情。',
         buttons: {
             show_next_time: '下次启动时显示',
+            shown_next_time: '将在下次启动时显示',
         },
         shortcuts: {
             title: '快捷键',

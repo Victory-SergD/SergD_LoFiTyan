@@ -48,6 +48,7 @@ export const nl: Translations = {
         tagline: 'Creëer je eigen sfeer, Lofi Engine bepaalt de stemming.',
         buttons: {
             show_next_time: 'Toon bij volgende start',
+            shown_next_time: 'Wordt getoond bij volgende start',
         },
         shortcuts: {
             title: 'Sneltoetsen',
