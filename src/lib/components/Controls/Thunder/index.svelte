@@ -1,6 +1,7 @@
 <script lang="ts">
   import { IconCloudStorm } from "@tabler/icons-svelte";
   import { onMount } from "svelte";
+  import { isTypingTarget } from "../../../utils/dom";
 
   export let volume: number;
 
@@ -25,22 +26,25 @@
     }
   }
 
-  // Shortuct to toggle storm with "S" key
-  window.addEventListener("keydown", (e) => {
+  // Shortcut to toggle storm with "S" key
+  function onKeydown(e: KeyboardEvent) {
+    if (isTypingTarget(e)) return;
     if (e.key === "s") {
       toggleThunder();
     }
-  });
+  }
 
-  // Update volume
   onMount(() => {
+    window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-thunder", toggleThunder);
-    setInterval(() => {
+    const volumeTimer = setInterval(() => {
       storm.volume = volume;
     }, 100);
 
     return () => {
+      window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-thunder", toggleThunder);
+      clearInterval(volumeTimer);
     };
   });
 </script>

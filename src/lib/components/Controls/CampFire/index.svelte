@@ -1,6 +1,7 @@
 <script lang="ts">
   import { IconCampfire } from "@tabler/icons-svelte";
   import { onMount } from "svelte";
+  import { isTypingTarget } from "../../../utils/dom";
 
   export let volume: number;
 
@@ -25,22 +26,25 @@
     }
   }
 
-  // Shortuct to toggle fire with "F" key
-  window.addEventListener("keydown", (e) => {
+  // Shortcut to toggle fire with "F" key
+  function onKeydown(e: KeyboardEvent) {
+    if (isTypingTarget(e)) return;
     if (e.key === "f") {
       toggleFire();
     }
-  });
+  }
 
-  // Update volume
   onMount(() => {
+    window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-campfire", toggleFire);
-    setInterval(() => {
+    const volumeTimer = setInterval(() => {
       fire.volume = volume;
-    },100);
+    }, 100);
 
     return () => {
+      window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-campfire", toggleFire);
+      clearInterval(volumeTimer);
     };
   });
 </script>

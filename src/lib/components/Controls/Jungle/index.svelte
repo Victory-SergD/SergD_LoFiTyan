@@ -1,6 +1,7 @@
 <script lang="ts">
   import { IconTrees } from "@tabler/icons-svelte";
   import { onMount } from "svelte";
+  import { isTypingTarget } from "../../../utils/dom";
 
   export let volume: number;
 
@@ -25,21 +26,25 @@
     }
   }
 
-  // Shortuct to toggle jungle with "D" key
-  window.addEventListener("keydown", (e) => {
+  // Shortcut to toggle jungle with "D" key
+  function onKeydown(e: KeyboardEvent) {
+    if (isTypingTarget(e)) return;
     if (e.key === "d") {
       toggleJungle();
     }
-  });
-  // Update volume
+  }
+
   onMount(() => {
+    window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-jungle", toggleJungle);
-    setInterval(() => {
+    const volumeTimer = setInterval(() => {
       jungle.volume = volume;
-    },100);
+    }, 100);
 
     return () => {
+      window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-jungle", toggleJungle);
+      clearInterval(volumeTimer);
     };
   });
 </script>

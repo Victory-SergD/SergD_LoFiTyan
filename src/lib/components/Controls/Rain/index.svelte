@@ -2,6 +2,7 @@
   import { IconCloudRain } from "@tabler/icons-svelte";
   import { onDestroy, onMount } from "svelte";
   import { volumes } from "../../../stores/volume";
+  import { isTypingTarget } from "../../../utils/dom";
   import RainAnimation from "./RainAnimation.svelte";
 
   let rain = new Audio("assets/engine/effects/rain.mp3");
@@ -35,8 +36,7 @@
 
   onMount(() => {
     const handleKeydown = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null;
-      if (el && el.closest("input")) return;
+      if (isTypingTarget(e)) return;
       if (e.key === "a") toggleRain();
     };
     window.addEventListener("keydown", handleKeydown);
