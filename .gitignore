@@ -25,3 +25,6 @@ dist-ssr
 
 # visual brainstorming companion
 .superpowers/
+
+# generated tauri schemas
+src-tauri/gen/
