@@ -11,10 +11,11 @@
     isMaximized: async () => false,
   };
 
-  let barType = "generic" as "mac" | "generic" | "hidden";
+  let barType = "hidden" as "mac" | "generic" | "hidden";
+  let ready = false; // true once a real appWindow is bound
   let noSideEffect = false; // Disable app controls changes side effects
 
-  onMount(() => {
+  onMount(async () => {
     const userAgent = navigator.userAgent || "";
     const platform = navigator.platform || "";
 
@@ -27,33 +28,29 @@
       return;
     }
 
-    if (isTauri) {
-      try {
-        import("@tauri-apps/api/webviewWindow").then(
-          ({ getCurrentWebviewWindow }) => {
-            appWindow = getCurrentWebviewWindow();
-          }
-        );
-      } catch (_e) {}
+    try {
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
+      appWindow = getCurrentWebviewWindow();
+      ready = true;
+    } catch (_e) {
+      ready = false;
     }
 
-    if (platform.includes("Mac")) {
-      barType = "mac";
-    } else {
-      barType = "generic";
-    }
+    barType = platform.includes("Mac") ? "mac" : "generic";
   });
 </script>
 
 {#if barType !== "hidden"}
   <div class="titlebar glass" data-tauri-drag-region>
-    {#if barType == "mac"}
+    {#if barType == "mac" && ready}
       <MacControls {noSideEffect} {appWindow} />
     {/if}
     <div class="drag" data-tauri-drag-region>
       <img src="assets/dots.svg" alt="logo" width="18" />
     </div>
-    {#if barType == "generic"}
+    {#if barType == "generic" && ready}
       <GenericControls {noSideEffect} {appWindow} />
     {/if}
   </div>
