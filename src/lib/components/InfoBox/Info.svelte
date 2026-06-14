@@ -22,17 +22,6 @@
     showOnStart = false;
   }
 
-  // Listen to escape key to close info box
-  document.addEventListener(
-    "keydown",
-    function (e) {
-      if (e.key === "Escape" && visible) {
-        toggleInfoBox();
-      }
-    },
-    false,
-  );
-
   function toggleShowOnStart() {
     showOnStart = !showOnStart;
     if (showOnStart) {
@@ -45,8 +34,16 @@
   }
 
   onMount(() => {
+    // Listen to escape key to close info box
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && visible) {
+        toggleInfoBox();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
     window.addEventListener("lofi-toggle-info", toggleInfoBox);
     return () => {
+      document.removeEventListener("keydown", handleEscape);
       window.removeEventListener("lofi-toggle-info", toggleInfoBox);
     };
   });

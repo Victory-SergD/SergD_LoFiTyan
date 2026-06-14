@@ -1,12 +1,19 @@
 <script lang="ts">
   import { IconCampfire } from "@tabler/icons-svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { volumes } from "../../../stores/volume";
   import { isTypingTarget } from "../../../utils/dom";
-
-  export let volume: number;
 
   let fire = new Audio("assets/engine/effects/fire.mp3");
   let isFire = false;
+  let currentVolume = 1;
+
+  // Live volume from the store — no polling (audio-5).
+  const unsub = volumes.subscribe((v) => {
+    currentVolume = v.effects.campfire ?? 1;
+    fire.volume = currentVolume;
+  });
+  onDestroy(() => unsub());
 
   function toggleFire() {
     if (isFire) {
@@ -14,7 +21,7 @@
       isFire = false;
     } else {
       fire.loop = true;
-      fire.volume = volume;
+      fire.volume = currentVolume;
       fire
         .play()
         .then(() => {
@@ -37,14 +44,10 @@
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-campfire", toggleFire);
-    const volumeTimer = setInterval(() => {
-      fire.volume = volume;
-    }, 100);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-campfire", toggleFire);
-      clearInterval(volumeTimer);
     };
   });
 </script>

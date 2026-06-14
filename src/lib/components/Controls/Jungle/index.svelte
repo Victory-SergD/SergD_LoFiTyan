@@ -1,12 +1,19 @@
 <script lang="ts">
   import { IconTrees } from "@tabler/icons-svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { volumes } from "../../../stores/volume";
   import { isTypingTarget } from "../../../utils/dom";
-
-  export let volume: number;
 
   let jungle = new Audio("assets/engine/effects/jungle.mp3");
   let isActive = false;
+  let currentVolume = 1;
+
+  // Live volume from the store — no polling (audio-5).
+  const unsub = volumes.subscribe((v) => {
+    currentVolume = v.effects.jungle ?? 1;
+    jungle.volume = currentVolume;
+  });
+  onDestroy(() => unsub());
 
   function toggleJungle() {
     if (isActive) {
@@ -14,7 +21,7 @@
       isActive = false;
     } else {
       jungle.loop = true;
-      jungle.volume = volume;
+      jungle.volume = currentVolume;
       jungle
         .play()
         .then(() => {
@@ -37,14 +44,10 @@
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-jungle", toggleJungle);
-    const volumeTimer = setInterval(() => {
-      jungle.volume = volume;
-    }, 100);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-jungle", toggleJungle);
-      clearInterval(volumeTimer);
     };
   });
 </script>

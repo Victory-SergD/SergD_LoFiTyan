@@ -53,14 +53,6 @@
       if (e.key === "ArrowDown") nextTrack();
     };
 
-    const handleToggleTrack = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail && detail.id !== undefined) {
-        toggleLayer(String(detail.id));
-        visibleTrackId = String(detail.id);
-      }
-    };
-
     const handleSettingsOpen = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail && detail.isActive !== undefined) {
@@ -69,12 +61,10 @@
     };
 
     window.addEventListener("keydown", handleKeydown);
-    window.addEventListener("lofi-toggle-track", handleToggleTrack);
     window.addEventListener("settings-open-changed", handleSettingsOpen);
 
     return () => {
       window.removeEventListener("keydown", handleKeydown);
-      window.removeEventListener("lofi-toggle-track", handleToggleTrack);
       window.removeEventListener("settings-open-changed", handleSettingsOpen);
     };
   });

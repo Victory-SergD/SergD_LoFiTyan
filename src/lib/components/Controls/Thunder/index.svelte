@@ -1,12 +1,19 @@
 <script lang="ts">
   import { IconCloudStorm } from "@tabler/icons-svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { volumes } from "../../../stores/volume";
   import { isTypingTarget } from "../../../utils/dom";
-
-  export let volume: number;
 
   let storm = new Audio("assets/engine/effects/thunder.mp3");
   let isStorming = false;
+  let currentVolume = 1;
+
+  // Live volume from the store — no polling (audio-5).
+  const unsub = volumes.subscribe((v) => {
+    currentVolume = v.effects.thunder ?? 1;
+    storm.volume = currentVolume;
+  });
+  onDestroy(() => unsub());
 
   function toggleThunder() {
     if (isStorming) {
@@ -14,7 +21,7 @@
       isStorming = false;
     } else {
       storm.loop = true;
-      storm.volume = volume;
+      storm.volume = currentVolume;
       storm
         .play()
         .then(() => {
@@ -37,14 +44,10 @@
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-thunder", toggleThunder);
-    const volumeTimer = setInterval(() => {
-      storm.volume = volume;
-    }, 100);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-thunder", toggleThunder);
-      clearInterval(volumeTimer);
     };
   });
 </script>
