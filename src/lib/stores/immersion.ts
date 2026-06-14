@@ -1,12 +1,29 @@
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 
 export const IMMERSION_IDLE_MS = 3000;
 
 /** Writable: true = chrome hidden / immersive canvas. */
 export const immersive = writable<boolean>(false);
 
+// The currently-active idle timer (set by initIdleWatch). A manual toggle syncs
+// this so the idle watcher doesn't immediately undo the user's choice.
+let activeTimer: IdleTimer | null = null;
+
 export function toggleImmersive(): void {
-  immersive.update((v) => !v);
+  const next = !get(immersive);
+  immersive.set(next);
+  // Sync the idle timer with this manual choice so the idle watcher doesn't
+  // immediately undo it. A manual toggle counts as "user just acted", so we
+  // clear the internal idle flag and re-arm a fresh countdown:
+  // - manual ON  -> the next mousemove no longer fires onActive (it would only
+  //   fire when transitioning *from* idle), so immersive stays ON through the
+  //   next idle window instead of flickering off on the first cursor move.
+  // - manual OFF after an auto-idle -> the stale pending idle tick is replaced
+  //   by a fresh window, so immersive isn't re-set the instant the user opts out.
+  if (activeTimer) {
+    activeTimer.setIdle(false);
+    activeTimer.reset();
+  }
 }
 
 // setTimeout returns `number` in the DOM lib and `Timeout` under @types/node;
@@ -25,6 +42,10 @@ export interface IdleTimer {
   start(): void;
   stop(): void;
   activity(): void;
+  /** Re-arm the idle countdown without changing the idle/active flag. */
+  reset(): void;
+  /** Force the internal idle/active flag (used to sync with a manual toggle). */
+  setIdle(value: boolean): void;
 }
 
 /**
@@ -66,6 +87,12 @@ export function createIdleTimer(opts: IdleTimerOptions): IdleTimer {
         handle = null;
       }
     },
+    reset() {
+      arm();
+    },
+    setIdle(value: boolean) {
+      isIdle = value;
+    },
   };
 }
 
@@ -76,9 +103,17 @@ export function createIdleTimer(opts: IdleTimerOptions): IdleTimer {
 export function initIdleWatch(): () => void {
   const timer = createIdleTimer({
     idleMs: IMMERSION_IDLE_MS,
-    onIdle: () => immersive.set(true),
-    onActive: () => immersive.set(false),
+    // Only write on a REAL state change so a manual toggle isn't re-fired /
+    // undone (e.g. an idle tick won't re-set immersive=true when already true).
+    onIdle: () => {
+      if (!get(immersive)) immersive.set(true);
+    },
+    onActive: () => {
+      if (get(immersive)) immersive.set(false);
+    },
   });
+
+  activeTimer = timer;
 
   const onActivity = () => timer.activity();
 
@@ -90,5 +125,6 @@ export function initIdleWatch(): () => void {
     window.removeEventListener("mousemove", onActivity);
     window.removeEventListener("keydown", onActivity);
     timer.stop();
+    if (activeTimer === timer) activeTimer = null;
   };
 }

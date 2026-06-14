@@ -194,4 +194,15 @@
       height: 55vh;
     }
   }
+
+  /* Portrait: gear sits in the bottom area, so open the panel UPWARD and
+     cap its height so it fits in the viewport without clipping the dock. */
+  @media (orientation: portrait) {
+    .settings-container {
+      top: auto;
+      bottom: 60px;
+      max-height: 70vh;
+      height: auto;
+    }
+  }
 </style>

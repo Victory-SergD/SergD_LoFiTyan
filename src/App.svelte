@@ -85,21 +85,21 @@
   <div class="chrome">
     <Config />
     <TopBar />
-    <button
-      class="immersion-toggle glass"
-      class:active={$immersive}
-      title="Просторный режим (Ctrl/Cmd+I)"
-      aria-label="Просторный режим"
-      on:click={toggleImmersive}
-    >
-      <IconArrowsMaximize size={18} />
-    </button>
     <section class="content">
       <TrackList />
       <Controls />
       <Info />
     </section>
   </div>
+  <button
+    class="immersion-toggle glass"
+    class:active={$immersive}
+    title="Просторный режим (Ctrl/Cmd+I)"
+    aria-label="Просторный режим"
+    on:click={toggleImmersive}
+  >
+    <IconArrowsMaximize size={18} />
+  </button>
   <PlayButton />
   <ContextMenu />
   <Tooltip />
@@ -126,6 +126,12 @@
   }
 
   @media (orientation: portrait) {
+    .container {
+      overflow-y: auto;
+      height: auto;
+      min-height: 100vh;
+    }
+
     .content {
       flex-direction: column;
       justify-content: flex-end;
@@ -133,6 +139,7 @@
       gap: 16px;
       height: auto;
       min-height: 100vh;
+      padding-bottom: 170px;
     }
   }
 

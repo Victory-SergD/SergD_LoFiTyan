@@ -452,6 +452,7 @@
     justify-content: center;
     align-items: center;
     gap: 5px;
+    z-index: 30;
   }
 
   .play-button {
@@ -519,9 +520,6 @@
   }
 
   @media only screen and (max-width: 600px) {
-    .play-button {
-      margin-bottom: 40px;
-    }
     .progressionList {
       bottom: 0;
       left: 0;
