@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import Background from "./Background.svelte";
   import Volume from "./Volume.svelte";
-  import AutoDJ from "./AutoDJ.svelte";
 
   import { t, locale, setLocale } from "../../../locales/store";
   import { isTypingTarget } from "../../../utils/dom";
@@ -74,7 +73,6 @@
       <div class="settings-content">
         <Background />
         <Volume />
-        <AutoDJ />
         <div class="section language-section">
           <h4>{$t.settings.language.title}</h4>
           <div class="lang-switcher">

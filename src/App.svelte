@@ -8,8 +8,8 @@
     pauseIdleWatch,
     resumeIdleWatch,
   } from "./lib/stores/immersion";
-  import PlayButton from "./lib/PlayButton.svelte";
-  import TrackList from "./lib/components/TrackList/index.svelte";
+  import RadioPlayer from "./lib/components/RadioPlayer/index.svelte";
+  import { loadStations, togglePlay, pause } from "./lib/stores/radio";
   import Canvas from "./lib/components/Canvas/index.svelte";
   import Controls from "./lib/components/Controls/index.svelte";
   import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
@@ -31,9 +31,38 @@
     }
   }
 
+  // Global keyboard handler for the radio + stop-all. The 'k' stop-all dispatch
+  // used to live in TrackList (removed); it now broadcasts `lofi-stop-all`, which
+  // the radio store and the 4 weather effects listen for. (Plain digit/word keys
+  // are ignored while typing in inputs.)
+  function onGlobalHotkey(e: KeyboardEvent) {
+    const t = e.target as HTMLElement | null;
+    if (t && t.closest("input, textarea, select")) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "k") {
+      window.dispatchEvent(new CustomEvent("lofi-stop-all"));
+    }
+  }
+
+  // ContextMenu dispatches `lofi-toggle-play`; route it to the radio. The radio
+  // listens for `lofi-stop-all` to pause itself ('k'), alongside the weather
+  // effects.
+  function onTogglePlay() {
+    togglePlay();
+  }
+  function onStopAll() {
+    pause();
+  }
+
   onMount(() => {
     cleanupIdle = initIdleWatch();
     window.addEventListener("keydown", onImmersionHotkey);
+    window.addEventListener("keydown", onGlobalHotkey);
+    window.addEventListener("lofi-toggle-play", onTogglePlay);
+    window.addEventListener("lofi-stop-all", onStopAll);
+
+    // Load lofi stations so the RadioPlayer is ready to play.
+    void loadStations("lofi");
 
     // Initialize direction
     document.documentElement.dir = $dir;
@@ -76,6 +105,9 @@
   onDestroy(() => {
     if (cleanupIdle) cleanupIdle();
     window.removeEventListener("keydown", onImmersionHotkey);
+    window.removeEventListener("keydown", onGlobalHotkey);
+    window.removeEventListener("lofi-toggle-play", onTogglePlay);
+    window.removeEventListener("lofi-stop-all", onStopAll);
   });
 
   $: {
@@ -103,19 +135,12 @@
     <Config />
     <TopBar />
     <section class="content">
-      <TrackList />
       <Controls />
       <Info />
     </section>
-  </div>
-  <div
-    class="play-wrap"
-    on:pointerenter={pauseIdleWatch}
-    on:pointerleave={resumeIdleWatch}
-    on:mouseenter={pauseIdleWatch}
-    on:mouseleave={resumeIdleWatch}
-  >
-    <PlayButton />
+    <!-- RadioPlayer lives inside `.chrome` so it auto-hides with the rest of the
+         chrome in immersive mode, per the user's KEEP-immersion request. -->
+    <RadioPlayer />
   </div>
   <ContextMenu />
   <Tooltip />
@@ -166,13 +191,5 @@
   .container.immersive .chrome {
     opacity: 0;
     pointer-events: none;
-  }
-
-  /* Wrapper around PlayButton only to host the hover-pause handlers (BUG A).
-     `display: contents` keeps it transparent to layout so the PlayButton's own
-     fixed positioning and the canvas behind it are unaffected; the play
-     controls themselves remain the pointer targets. */
-  .play-wrap {
-    display: contents;
   }
 </style>

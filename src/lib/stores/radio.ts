@@ -5,6 +5,7 @@
 // injectable-audio-factory pattern from ./atmosphere.ts so all state
 // transitions are unit-testable without real network or audio.
 import { writable, get } from "svelte/store";
+import { volumes } from "./volume";
 
 export interface RadioStation {
   id: string;
@@ -109,9 +110,22 @@ export function setAudioFactory(fn: AudioFactory): void {
 // playing at any time, so one element is created lazily and reused.
 let audio: HTMLAudioElement | null = null;
 
+// Live master volume from the volume store — mirrors how the weather effects
+// read `volumes.master`. The current value is cached so playback started before
+// the first subscription tick still applies the right level, and the live
+// audio element is updated whenever master changes.
+let masterVolume = get(volumes).master ?? 1;
+volumes.subscribe((v) => {
+  masterVolume = v.master ?? 1;
+  if (audio) {
+    audio.volume = masterVolume;
+  }
+});
+
 function ensureAudio(): HTMLAudioElement {
   if (!audio) {
     audio = audioFactory("");
+    audio.volume = masterVolume;
     audio.addEventListener("error", () => {
       // A station that fails to load/decode. Keep it simple: surface the error
       // and stop, without auto-advancing.
@@ -132,6 +146,7 @@ export async function play(station: RadioStation): Promise<void> {
   current.set(station);
   error.set(null);
   el.src = station.url;
+  el.volume = masterVolume;
   try {
     await el.play();
     isPlaying.set(true);
