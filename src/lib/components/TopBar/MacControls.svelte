@@ -5,42 +5,47 @@
   export let appWindow;
   export let noSideEffect = false;
 
+  async function syncMaximized() {
+    const maximized = await appWindow.isMaximized();
+    isMaximized = maximized;
+    // Remove the rounded corners when maximized
+    document.body.style.borderRadius = maximized ? "0px" : "10px";
+  }
+
   onMount(() => {
     const close = document.getElementById("close-mac");
     const minimize = document.getElementById("minimize-mac");
     const maximize = document.getElementById("maximize-mac");
 
-    close.addEventListener("click", () => {
-      appWindow.close();
-    });
-
-    minimize.addEventListener("click", () => {
-      appWindow.minimize();
-    });
-
-    maximize.addEventListener("click", () => {
-      if (isMaximized) {
-        appWindow.unmaximize();
-        isMaximized = false;
+    const onClose = () => appWindow.close();
+    const onMinimize = () => appWindow.minimize();
+    const onMaximize = async () => {
+      const maximized = await appWindow.isMaximized();
+      if (maximized) {
+        await appWindow.unmaximize();
       } else {
-        appWindow.maximize();
-        isMaximized = true;
+        await appWindow.maximize();
       }
-    });
+      await syncMaximized();
+    };
 
-    // watch if window is maximized
-    // from other sources apart from top bar
-    !noSideEffect && setInterval(() => {
-      appWindow.isMaximized().then((maximized) => {
-        isMaximized = maximized;
-        // Remove the rounded corners when maximized
-        if (isMaximized) {
-          document.body.style.borderRadius = "0px";
-        } else {
-          document.body.style.borderRadius = "10px";
-        }
-      });
-    }, 300);
+    close.addEventListener("click", onClose);
+    minimize.addEventListener("click", onMinimize);
+    maximize.addEventListener("click", onMaximize);
+
+    // initial state + watch for changes from other sources (resize, OS)
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (!noSideEffect) {
+      syncMaximized();
+      interval = setInterval(syncMaximized, 300);
+    }
+
+    return () => {
+      close.removeEventListener("click", onClose);
+      minimize.removeEventListener("click", onMinimize);
+      maximize.removeEventListener("click", onMaximize);
+      if (interval) clearInterval(interval);
+    };
   });
 </script>
 
