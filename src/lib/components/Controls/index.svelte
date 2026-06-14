@@ -30,12 +30,10 @@
     border-radius: 50px;
   }
 
-  @media only screen and (max-width: 600px) {
+  @media (orientation: portrait) {
     .controls {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 85vw;
+      width: min(85vw, 420px);
+      margin: 0 auto;
     }
   }
 </style>
