@@ -13,8 +13,8 @@ describe("immersion store", () => {
     immersive.set(false);
   });
 
-  it("exposes a 3000ms idle threshold", () => {
-    expect(IMMERSION_IDLE_MS).toBe(3000);
+  it("exposes an 8000ms idle threshold", () => {
+    expect(IMMERSION_IDLE_MS).toBe(8000);
   });
 
   it("toggleImmersive flips the boolean", () => {

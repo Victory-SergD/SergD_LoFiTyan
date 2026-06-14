@@ -1,6 +1,6 @@
 import { writable, get } from "svelte/store";
 
-export const IMMERSION_IDLE_MS = 3000;
+export const IMMERSION_IDLE_MS = 8000;
 
 /** Writable: true = chrome hidden / immersive canvas. */
 export const immersive = writable<boolean>(false);
@@ -97,8 +97,11 @@ export function createIdleTimer(opts: IdleTimerOptions): IdleTimer {
 }
 
 /**
- * Registers global mousemove/keydown listeners. After IMMERSION_IDLE_MS of no
- * activity -> immersive=true; on activity -> immersive=false. Returns a cleanup fn.
+ * Registers global activity listeners. After IMMERSION_IDLE_MS of no activity ->
+ * immersive=true; on activity -> immersive=false. Returns a cleanup fn.
+ * Listens to a broad set of interaction events (move/click/scroll/key/touch/pen)
+ * so any real interaction re-arms the countdown and the chrome doesn't vanish
+ * while the user is still using the app.
  */
 export function initIdleWatch(): () => void {
   const timer = createIdleTimer({
@@ -117,13 +120,25 @@ export function initIdleWatch(): () => void {
 
   const onActivity = () => timer.activity();
 
-  window.addEventListener("mousemove", onActivity);
-  window.addEventListener("keydown", onActivity);
+  // Any of these interactions counts as activity and re-arms the idle countdown.
+  const activityEvents = [
+    "mousemove",
+    "mousedown",
+    "wheel",
+    "keydown",
+    "touchstart",
+    "pointerdown",
+  ] as const;
+
+  for (const evt of activityEvents) {
+    window.addEventListener(evt, onActivity);
+  }
   timer.start();
 
   return () => {
-    window.removeEventListener("mousemove", onActivity);
-    window.removeEventListener("keydown", onActivity);
+    for (const evt of activityEvents) {
+      window.removeEventListener(evt, onActivity);
+    }
     timer.stop();
     if (activeTimer === timer) activeTimer = null;
   };
