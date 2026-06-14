@@ -1,26 +1,17 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { t } from "../../../locales/store";
-
-  let mode = "MUSIC";
+  import { autoDjMode, setAutoDjMode } from "../../../stores/autodj";
+  import type { AutoDjMode } from "../../../stores/autodj";
 
   $: MODES = [
-    { id: "MUSIC", label: $t.settings.autodj.modes.music.label, desc: $t.settings.autodj.modes.music.desc },
-    { id: "ATMOSPHERE", label: $t.settings.autodj.modes.atmosphere.label, desc: $t.settings.autodj.modes.atmosphere.desc },
-    { id: "WORLD", label: $t.settings.autodj.modes.world.label, desc: $t.settings.autodj.modes.world.desc },
-    { id: "MANUAL", label: $t.settings.autodj.modes.manual.label, desc: $t.settings.autodj.modes.manual.desc },
+    { id: "MUSIC" as AutoDjMode, label: $t.settings.autodj.modes.music.label, desc: $t.settings.autodj.modes.music.desc },
+    { id: "ATMOSPHERE" as AutoDjMode, label: $t.settings.autodj.modes.atmosphere.label, desc: $t.settings.autodj.modes.atmosphere.desc },
+    { id: "WORLD" as AutoDjMode, label: $t.settings.autodj.modes.world.label, desc: $t.settings.autodj.modes.world.desc },
+    { id: "MANUAL" as AutoDjMode, label: $t.settings.autodj.modes.manual.label, desc: $t.settings.autodj.modes.manual.desc },
   ];
 
-  onMount(() => {
-    mode = localStorage.getItem("AutoDJMode") || "MUSIC";
-  });
-
-  function updateMode(newMode) {
-    mode = newMode;
-    localStorage.setItem("AutoDJMode", mode);
-    window.dispatchEvent(
-      new CustomEvent("auto-dj-mode-changed", { detail: { mode } })
-    );
+  function updateMode(newMode: AutoDjMode) {
+    setAutoDjMode(newMode);
   }
 </script>
 
@@ -29,7 +20,7 @@
   <div class="modes">
     {#each MODES as m}
       <button
-        class:active={mode === m.id}
+        class:active={$autoDjMode === m.id}
         on:click={() => updateMode(m.id)}
         data-tooltip={m.desc}
       >
