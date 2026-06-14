@@ -6,6 +6,12 @@
     // IconBrandTwitter,
     // IconLink,
   } from "@tabler/icons-svelte";
+  import { open } from "@tauri-apps/plugin-shell";
+
+  async function openExternal(event: MouseEvent, url: string) {
+    event.preventDefault();
+    await open(url);
+  }
 </script>
 
 <div class="social-links">
@@ -18,7 +24,11 @@
   <a href="https://LofiEngine.com" target="_blank">
     <IconLink size={25} />
   </a> -->
-  <a href="https://github.com/meel-hd/lofi-engine" target="_blank">
+  <a
+    href="https://github.com/meel-hd/lofi-engine"
+    target="_blank"
+    on:click={(e) => openExternal(e, "https://github.com/meel-hd/lofi-engine")}
+  >
     <IconBrandGithub size={25} />
   </a>
 </div>
