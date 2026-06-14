@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { IconArrowsMaximize } from "@tabler/icons-svelte";
   import { dir, locale } from "./lib/locales/store";
+  import { immersive, initIdleWatch, toggleImmersive } from "./lib/stores/immersion";
   import PlayButton from "./lib/PlayButton.svelte";
   import TrackList from "./lib/components/TrackList/index.svelte";
   import Canvas from "./lib/components/Canvas/index.svelte";
@@ -11,7 +13,22 @@
   import ContextMenu from "./lib/components/ContextMenu/ContextMenu.svelte";
   import Tooltip from "./lib/components/Tooltip.svelte";
 
+  let cleanupIdle: (() => void) | null = null;
+
+  function onImmersionHotkey(e: KeyboardEvent) {
+    // Ctrl/Cmd + I toggles immersive mode; ignore while typing in inputs
+    const t = e.target as HTMLElement | null;
+    if (t && t.closest("input, textarea, select")) return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
+      e.preventDefault();
+      toggleImmersive();
+    }
+  }
+
   onMount(() => {
+    cleanupIdle = initIdleWatch();
+    window.addEventListener("keydown", onImmersionHotkey);
+
     // Initialize direction
     document.documentElement.dir = $dir;
     document.documentElement.lang = $locale;
@@ -50,6 +67,11 @@
     }
   });
 
+  onDestroy(() => {
+    if (cleanupIdle) cleanupIdle();
+    window.removeEventListener("keydown", onImmersionHotkey);
+  });
+
   $: {
     if (typeof document !== "undefined") {
       document.documentElement.dir = $dir;
@@ -58,15 +80,26 @@
   }
 </script>
 
-<main class="container">
+<main class="container" class:immersive={$immersive}>
   <Canvas />
-  <Config />
-  <TopBar />
-  <section class="content">
-    <TrackList />
-    <Controls />
-    <Info />
-  </section>
+  <div class="chrome">
+    <Config />
+    <TopBar />
+    <button
+      class="immersion-toggle glass"
+      class:active={$immersive}
+      title="Просторный режим (Ctrl/Cmd+I)"
+      aria-label="Просторный режим"
+      on:click={toggleImmersive}
+    >
+      <IconArrowsMaximize size={18} />
+    </button>
+    <section class="content">
+      <TrackList />
+      <Controls />
+      <Info />
+    </section>
+  </div>
   <PlayButton />
   <ContextMenu />
   <Tooltip />
@@ -101,5 +134,32 @@
       height: auto;
       min-height: 100vh;
     }
+  }
+
+  .chrome {
+    transition: opacity 0.4s ease;
+  }
+
+  .container.immersive .chrome {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .immersion-toggle {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 40;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .immersion-toggle.active {
+    color: #9ad0ff;
   }
 </style>
