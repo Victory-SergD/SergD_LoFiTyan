@@ -89,6 +89,9 @@ export const fr: Translations = {
         reload: 'Recharger',
         about: 'À propos',
     },
+    player: {
+        regenerate: 'Nouvelle musique',
+    },
     tracks: {
         1: { quote: "Nous ne pouvons pas diriger le vent, mais nous pouvons ajuster les voiles." },
         2: { quote: "La mer est l'émotion incarnée. Elle aime, hait et pleure." },

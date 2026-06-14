@@ -89,6 +89,9 @@ export const zh: Translations = {
         reload: '重新加载',
         about: '关于',
     },
+    player: {
+        regenerate: '新音乐',
+    },
     tracks: {
         1: { quote: "我们无法引导风向，但我们可以调整风帆。" },
         2: { quote: "大海是情感的化身。它爱，它恨，它哭泣。" },

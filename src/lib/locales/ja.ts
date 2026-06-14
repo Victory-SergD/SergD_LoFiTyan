@@ -89,6 +89,9 @@ export const ja: Translations = {
         reload: 'リロード',
         about: 'について',
     },
+    player: {
+        regenerate: '新しい曲',
+    },
     tracks: {
         1: { quote: "風の向きを変えることはできないが、帆の向きを変えることはできる。" },
         2: { quote: "海は感情の化身だ。愛し、憎み、そして泣く。" },

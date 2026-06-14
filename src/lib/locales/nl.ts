@@ -89,6 +89,9 @@ export const nl: Translations = {
         reload: 'Herladen',
         about: 'Over',
     },
+    player: {
+        regenerate: 'Nieuwe muziek',
+    },
     tracks: {
         1: { quote: "We kunnen de wind niet sturen, maar we kunnen de zeilen bijstellen." },
         2: { quote: "De zee is emotie in vlees en bloed. Ze heeft lief, haat en huilt." },

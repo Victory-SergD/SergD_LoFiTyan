@@ -69,7 +69,7 @@ export const en = {
                 campfire: 'Control The Campfire',
             },
             ambient: {
-                title: 'Ambient Tracks',
+                title: 'Atmosphere',
                 next: 'Navigate To Next Track',
                 prev: 'Navigate To Previous Track',
                 stop_all: 'Stop All Ambient Sounds',
@@ -86,6 +86,9 @@ export const en = {
         toggle_campfire: 'Toggle Campfire',
         reload: 'Reload',
         about: 'About',
+    },
+    player: {
+        regenerate: 'New music',
     },
     tracks: {
         1: { quote: "We cannot direct the wind, but we can adjust the sails." },

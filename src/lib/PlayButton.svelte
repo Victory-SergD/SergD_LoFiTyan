@@ -18,20 +18,14 @@
   import Noise from "../lib/engine/Drums/Noise";
   import Snare from "../lib/engine/Drums/Snare";
   import Piano from "../lib/engine/Piano/Piano";
+  import { get } from "svelte/store";
+  import { volumes } from "../lib/stores/volume";
+  import { autoDjMode } from "../lib/stores/autodj";
+  import { toggleLayer } from "../lib/stores/atmosphere";
+  import { t } from "../lib/locales/store";
 
-  const STORAGE_KEY = "Volumes";
-  const DEFFAULT_VOLUMES = {
-    rain: 1,
-    thunder: 1,
-    campfire: 1,
-    jungle: 1,
-    main_track: 1,
-  };
-  // Load previous vols or defualt
-  let volumes =
-    JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFFAULT_VOLUMES;
   // Convert linear volume (0 to 1) to dB
-  const linearToDb = (value) =>
+  const linearToDb = (value: number) =>
     value === 0 ? -Infinity : 20 * Math.log10(value);
 
   // Setup audio chain
@@ -42,7 +36,7 @@
     release: 0.1,
   });
   const lpf = new Tone.Filter(2000, "lowpass");
-  const vol = new Tone.Volume(linearToDb(volumes.main_track));
+  const vol = new Tone.Volume(linearToDb(get(volumes).master));
   Tone.Master.chain(cmp, lpf, vol);
   Tone.Transport.bpm.value = 156;
   Tone.Transport.swing = 1;
@@ -69,7 +63,7 @@
   let melodyOff = false;
 
   let isPlaying = false;
-  let autoDJMode = "MUSIC";
+  let isStarting = false;
 
   // Initialize instruments
   const pn = new Piano(() => (pianoLoaded = true)).sampler;
@@ -149,10 +143,11 @@
     hatLoop.humanize = true;
 
     // Listen for spacebar press
-    const handleKeydown = (e) => {
+    const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
-        toggle();
+        if (isStarting) return;
+        handleButtonAction();
       }
     };
 
@@ -160,25 +155,22 @@
       handleButtonAction();
     };
 
-    const handleAutoDJModeChange = (e) => {
-      autoDJMode = e.detail.mode;
-    };
-
     window.addEventListener("keydown", handleKeydown);
     window.addEventListener("lofi-toggle-play", handleCustomToggle);
-    window.addEventListener("auto-dj-mode-changed", handleAutoDJModeChange);
-
-    // Initialize mode
-    autoDJMode = localStorage.getItem("AutoDJMode") || "MUSIC";
 
     return () => {
       window.removeEventListener("keydown", handleKeydown);
       window.removeEventListener("lofi-toggle-play", handleCustomToggle);
-      window.removeEventListener("auto-dj-mode-changed", handleAutoDJModeChange);
     };
   });
 
+  // Live master volume from the store — no polling (audio-5).
+  const unsubVolume = volumes.subscribe((v) => {
+    vol.volume.value = linearToDb(v.master);
+  });
+
   onDestroy(() => {
+    unsubVolume();
     if (Tone.Transport.state === "started") {
       noise.stop();
       Tone.Transport.stop();
@@ -224,7 +216,7 @@
 
   function autoDJTransition() {
     if(isTransitioning) return; // Prevent overlaps
-    if(autoDJMode === "MANUAL") return;
+    if($autoDjMode === "MANUAL") return;
 
     isTransitioning = true;
 
@@ -241,7 +233,7 @@
 
     // Smart Effects: Toggle environmental effects randomly
     // Applied in ATMOSPHERE and WORLD
-    if (autoDJMode === "ATMOSPHERE" || autoDJMode === "WORLD") {
+    if ($autoDjMode === "ATMOSPHERE" || $autoDjMode === "WORLD") {
       const effects = ["rain", "thunder", "jungle", "campfire"];
       // 30% chance to toggle an effect
       if (Math.random() < 0.3) {
@@ -250,13 +242,11 @@
       }
     }
 
-    // Smart Tracks: Toggle tracks randomly
-    // Applied ONLY in WORLD
-    if (autoDJMode === "WORLD") {
-      // 20% chance to toggle a track
+    // Smart layers: toggle an atmosphere layer via the store (no desync). WORLD only.
+    if ($autoDjMode === "WORLD") {
       if (Math.random() < 0.2) {
-        const trackId = Math.floor(Math.random() * 9) + 1; // 1-9
-        window.dispatchEvent(new CustomEvent("lofi-toggle-track", { detail: { id: trackId } }));
+        const layerId = String(Math.floor(Math.random() * 9) + 1); // "1".."9"
+        toggleLayer(layerId);
       }
     }
 
@@ -348,14 +338,14 @@
     scalePos = newScalePos;
   }
 
-  function toggle() {
+  async function toggle() {
     progress = 0;
     if (Tone.Transport.state === "started") {
       noise.stop();
       Tone.Transport.stop();
       isPlaying = false;
     } else {
-      Tone.start();
+      await Tone.start();
       Tone.Transport.start();
       noise.start(0);
       chords.start(0);
@@ -365,43 +355,50 @@
       hatLoop.start(0);
       isPlaying = true;
     }
-    window.dispatchEvent(new CustomEvent("lofi-play-state-changed", { detail: { isPlaying } }));
+    window.dispatchEvent(
+      new CustomEvent("lofi-play-state-changed", { detail: { isPlaying } })
+    );
   }
 
-  function startAudioContext() {
-    Tone.start();
+  async function startAudioContext() {
+    await Tone.start();
     contextStarted = true;
   }
 
   $: allSamplesLoaded = pianoLoaded && kickLoaded && snareLoaded && hatLoaded;
   $: activeProgressionIndex = (progress + 7) % 8;
-  // Update volume
-  onMount(() => {
-    setInterval(() => {
-      let updatedVol =
-        JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFFAULT_VOLUMES;
-      vol.volume.value = linearToDb(updatedVol.main_track);
-    }, 100);
-  });
   // automically start audio context after samples are loaded
   $: if (allSamplesLoaded && !contextStarted) {
     startAudioContext();
     generateProgression();
   }
 
-  function handleButtonAction() {
+  async function handleButtonAction() {
     if (!allSamplesLoaded) {
-      // Do nothing, button is disabled
       return;
     } else if (!contextStarted) {
-      // Initialize audio context
-      startAudioContext();
+      isStarting = true;
+      await startAudioContext();
+      isStarting = false;
     } else if (!genChordsOnce) {
-      // Chords not generated yet, can't play
       return;
     } else {
-      // Normal play/pause functionality
-      toggle();
+      isStarting = true;
+      await toggle();
+      isStarting = false;
+    }
+  }
+
+  // Explicit "new music": regenerate the progression and restart sequences if playing.
+  function regenerate() {
+    generateProgression();
+    if (Tone.Transport.state === "started") {
+      progress = 0;
+      chords.start(0);
+      melody.start(0);
+      kickLoop.start(0);
+      snareLoop.start(0);
+      hatLoop.start(0);
     }
   }
 </script>
@@ -425,8 +422,9 @@
         <IconPlayerPlayFilled size={30} />
       {/if}
     </button>
-    <button class="generateBtn glass" on:click={generateProgression}>
+    <button class="generateBtn glass" on:click={regenerate} title={$t.player.regenerate}>
       <IconRefresh size={16} />
+      <span class="generate-label">{$t.player.regenerate}</span>
     </button>
   </div>
 
@@ -484,14 +482,20 @@
   .generateBtn {
     color: white;
     border: none;
-    border-radius: 50%;
-    width: 40px;
     height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 6px;
+    width: auto;
+    padding: 0 12px;
+    border-radius: 20px;
     margin-top: 10px;
     outline: none;
+  }
+  .generate-label {
+    font-size: 12px;
+    color: white;
   }
 
   .progressionList {
