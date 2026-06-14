@@ -104,7 +104,7 @@
 
 <style>
   .track-list {
-    width: 28vw;
+    width: clamp(220px, 28vw, 420px);
     height: 65vh;
     padding: 20px 10px;
     border-radius: 20px;
@@ -146,11 +146,12 @@
     backdrop-filter: blur(10px);
   }
 
-  @media only screen and (max-width: 600px) {
+  @media (orientation: portrait) {
     .track-list {
-      width: 100vw;
-      margin-top: 40px;
-      height: 45vh;
+      width: 100%;
+      max-width: min(92vw, 520px);
+      margin: 0 auto;
+      height: clamp(180px, 40vh, 420px);
     }
     #btn-view {
       width: 100%;
