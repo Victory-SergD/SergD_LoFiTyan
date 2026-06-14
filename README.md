@@ -1,153 +1,67 @@
-# LoFi Engine
-<p align="center">
-    <img alt="Icon" align="center" width="100" height="100" src="app-icon.png" />
-</p>
+<p align="center"><img src="app-icon.png" width="110" height="110" alt="LoFiTyan" /></p>
 
-Generate LoFi music on the go. You create your own atmosphere; LoFi Engine sets the mood.
+<h1 align="center">LoFiTyan</h1>
 
 <p align="center">
-  <a href="https://github.com/meel-hd/lofi-engine/releases/tag/app-v1.2.0">
-    <img src="https://img.shields.io/badge/Download-LoFi_Engine-blue?style=for-the-badge&logo=github" alt="Download">
-  </a>
+  <b>Своя LoFi-тян прямо на рабочем столе.</b><br/>
+  Бесконечная lo-fi музыка для работы, учёбы и вечернего чилла — генерируется локально и без интернета.
 </p>
 
-<p align="center">
-   <img  alt="Screenshot" src="screenshots/screenshot.jpeg" />
-</p>
+<p align="center"><img src="screenshots/screenshot.jpeg" alt="Скриншот LoFiTyan" /></p>
 
-## Table of Contents
+> 🛠️ Проект **Victory**. Форк и развитие открытого [lofi-engine](https://github.com/meel-hd/lofi-engine) (MIT).
+> Мы превращаем его в полноценную «LoFi-тян»: чиним баги, делаем вертикальный режим, добавляем стриминговые станции и интерактивного персонажа.
 
-- [Introduction](#lofi-engine)
-- [Tech Stack](#tech-stack)
-- [Roadmap](#roadmap)
-- [Features](#features)
-- [Run Locally](#run-locally)
-- [Contributing](#contributing)
-- [License](#license)
+## 📖 Что это
 
-## Tech Stack
+**LoFiTyan** — настольное приложение, которое **само сочиняет lo-fi музыку в реальном времени**, прямо на твоём компьютере и без интернета. Музыка не повторяется — она генерируется на лету. Можно подмешивать звуки природы (дождь, гром, лес, костёр, волны), настраивать визуал и управлять с клавиатуры. Лёгкое (на Tauri), работает на **macOS, Windows и Linux**.
 
-[![Svelte](https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00)](https://svelte.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
-[![Tauri](https://img.shields.io/badge/Tauri-FFC131?style=for-the-badge&logo=Tauri&logoColor=white)](https://tauri.app/)
-[![pnpm](https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
-[![Tone.js](https://img.shields.io/badge/Tone.js-009688?style=for-the-badge&logo=javascript&logoColor=white)](https://tonejs.github.io/)
+## 🗺️ Дорожная карта
 
-## Roadmap
-- [x] Procedural LoFi track generation using Tone.js
-- [x] Customizable ambient tracks
-- [x] Customizable effects
-- [x] Customizable look and feel
-- [x] Keyboard shortcuts for all actions
-- [x] Offline support
-- [x] Cross-platform support (Linux, Mac, Windows)
-- [x] [Browser deployment](https://lofi-engine.vercel.app/)
-- [ ] Purchasing a domain
-- [ ] Mobile support (iOS, Android)
-- [ ] More customization options and effects
-- [ ] Improved procedural generation algorithms
-- [ ] User feedback integration
+Развиваем проект по фазам (детальные документы — в [`docs/superpowers/specs/`](docs/superpowers/specs/)):
 
+- **Фаза 1 — Фундамент** &nbsp;`в работе` — стабилизация (30 исправлений из аудита кода), полноценный **вертикальный/портретный режим**, **«просторный режим»** с авто-скрытием управления, честный UX «Атмосферы».
+- **Фаза 2 — Станции** — второй режим музыки: качественные lo-fi стримы через открытые API, переключатель *Генеративный ↔ Стриминг*, автоопределение доступных источников.
+- **Фаза 3 — Вертикальный холст** — живые сцены, картинки и мини-видео для вертикального монитора.
+- **Фаза 4 — Персонаж** — интерактивная LoFi-тян, которая «живёт» на экране, реагирует и (позже) принимает заказы музыки голосом.
 
+## ✨ Возможности (сейчас)
 
-## Features
-* Create your own LoFi studio with your unique music with minimal touches from this and that. Be the Artist.
-* Works with major desktop platforms: **Linux**, **Mac**, and **Windows**.
-* Doesn't require an internet connection; your experience is fully private.
-* LoFi Engine's main focus is **customization**, **accessibility**, and **artistic freedom**.
+- 🎵 Бесконечная генеративная lo-fi музыка (Tone.js) — каждый раз разная.
+- 🌧️ Слои атмосферы: дождь, гром, лес, костёр, волны и др.
+- 🎛️ Авто-DJ (Immersion): режимы Музыка / Атмосфера / Мир / Ручной.
+- 🎨 Настройка визуала, горячие клавиши на все действия.
+- 🌍 7 языков интерфейса, включая русский. Полностью офлайн и приватно.
 
-### Customization
-1. **Playback**: If you want to listen to music or just listen to birds singing freely, you choose.
-2. **Look**: With carefully crafted artworks from talented artists, long study sessions become a joy.
-3. **Ambience**: A windy evening or the sound of waves crashing into the sand of a sunny beach brings peace.
+## 🧩 Технологии
 
-### Advanced Immersion (Auto DJ)
-The new **Immersion** system (Auto DJ) automatically manages the soundscape for you. It offers different modes to suit your needs:
-- **Music**: Focuses on the beat and chords without atmospheric effects.
-- **Atmosphere**: Adds core weather and nature effects for a fuller sound.
-- **World**: Incorporates specific textures like city sounds or wind for deep immersion.
-- **Manual**: Gives you full control to mix and match sounds as you please.
+`Tauri 2` · `Svelte` · `TypeScript` · `Vite` · `Tone.js` · `pnpm`
 
-### Internationalization
-LoFi Engine now speaks your language! We have added support for multiple languages to make the experience accessible to everyone.
-- **English**
-- **French** (Français)
-- **Spanish** (Español)
-- **Japanese** (日本語)
-- **Korean** (한국어)
-- **Indonesian** (Bahasa Indonesia)
-- **Russian** (Русский)
-- And more coming soon!
+## 🚀 Запуск локально
 
-### Accessibility
-Any action or click you can do with the mouse has a shortcut for it with the keyboard. For playback, effects, ambient tracks, look, etc.
+Понадобится: [Node.js](https://nodejs.org/), [pnpm](https://pnpm.io/), [Rust](https://www.rust-lang.org/) (stable) и [пререквизиты Tauri](https://tauri.app/start/prerequisites/) для твоей ОС.
 
-All information about the app and **shortcuts** is available in the *info box* accessible via the **ESC** key.
-
-![info-box](screenshots/info-box.png)
-
-### Procedural LoFi Track Generation
-
-The LoFi track is now generated procedurally using **Tone.js**, providing a dynamic and unique listening experience every time. We are actively seeking feedback from users to refine and improve the track generation process. Your input will help us enhance the quality, variety, and customization of the generated music.
-
-If you have suggestions or encounter any issues, please let us know by opening an issue or contributing directly to the project. Together, we can make LoFi Engine even better!
-
-## Run Locally
-
-To run LofiEngine locally, follow these steps:
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v14 or later)
-- [pnpm](https://pnpm.io/) (v6 or later)
-- [Rust](https://www.rust-lang.org/) (latest stable version)
-- [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites) (based on your operating system)
-
-### Installation
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/meel-hd/lofi-engine
-   cd lofi-engine
-   ```
-
-2. Install dependencies:
-   ```
-   pnpm install
-   ```
-
-### Development
-
-To run the app in development mode:
-
-```
-pnpm tauri:d
+```bash
+git clone https://github.com/Victory-SergD/SergD_LoFiTyan
+cd SergD_LoFiTyan
+pnpm install
+pnpm tauri:d   # запуск из исходников (режим разработки)
+pnpm tauri:b   # сборка установщика (.dmg / .exe / .deb / ...)
 ```
 
-This command will start both the Vite dev server for the frontend and the Tauri development process for the native shell.
+Дополнительно: `pnpm dev` (только фронтенд), `pnpm build`, `pnpm preview`, `pnpm check` (проверка типов).
 
-### Building
+## 📂 Структура проекта
 
-To build the app for production:
+- `src/` — фронтенд на Svelte: интерфейс, движок музыки [`src/lib/engine/`](src/lib/engine/), компоненты, локали.
+- `src-tauri/` — нативная оболочка (Rust / Tauri) и конфигурация приложения.
+- `public/assets/` — фоны, сэмплы пианино и барабанов, звуки атмосферы.
+- `docs/superpowers/specs/` — документы дизайна по фазам.
 
-```
-pnpm tauri:b
-```
+## 🙏 Основано на
 
-This will create a production-ready build of your application in the `src-tauri/target/release` directory.
+Этот проект — форк [**meel-hd/lofi-engine**](https://github.com/meel-hd/lofi-engine) (лицензия MIT). Большая благодарность автору и контрибьюторам за отличную основу.
 
-### Additional Commands
+## 📄 Лицензия
 
-- `pnpm dev`: Run the Vite development server without Tauri
-- `pnpm build`: Build the frontend assets without Tauri
-- `pnpm preview`: Preview the built frontend
-- `pnpm check`: Run Svelte type checking
-
-## Contributing
-
-Contributions are welcome. See the [Contributing Guide](./CONTRIBUTING.md) for details, and check the [issue tracker](https://github.com/meel-hd/lofi-engine/issues) if you want to help, report a bug, or discuss new ideas.
-
-## License
-This project is licensed under the [MIT License](LICENSE).
-Feel free to use, modify, and distribute this code as per the terms of the license.
+[MIT](LICENSE) — как и у оригинала. Можно свободно использовать, изменять и распространять.
