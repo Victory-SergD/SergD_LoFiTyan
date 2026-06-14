@@ -1,12 +1,18 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { IconArrowsMaximize } from "@tabler/icons-svelte";
   import { dir, locale } from "./lib/locales/store";
-  import { immersive, initIdleWatch, toggleImmersive } from "./lib/stores/immersion";
+  import {
+    immersive,
+    initIdleWatch,
+    toggleImmersive,
+    pauseIdleWatch,
+    resumeIdleWatch,
+  } from "./lib/stores/immersion";
   import PlayButton from "./lib/PlayButton.svelte";
   import TrackList from "./lib/components/TrackList/index.svelte";
   import Canvas from "./lib/components/Canvas/index.svelte";
   import Controls from "./lib/components/Controls/index.svelte";
+  import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
   import TopBar from "./lib/components/TopBar/TopBar.svelte";
   import Info from "./lib/components/InfoBox/Info.svelte";
   import Config from "./lib/Config.svelte";
@@ -82,7 +88,18 @@
 
 <main class="container" class:immersive={$immersive}>
   <Canvas />
-  <div class="chrome">
+  <!-- Weather ambiance: rendered OUTSIDE `.chrome` so it stays visible when the
+       controls auto-hide in immersive mode, like the character (BUG C). -->
+  <RainAnimation />
+  <!-- While the pointer is over any control, pause the auto-hide so controls are
+       never hidden out from under the cursor (BUG A). -->
+  <div
+    class="chrome"
+    on:pointerenter={pauseIdleWatch}
+    on:pointerleave={resumeIdleWatch}
+    on:mouseenter={pauseIdleWatch}
+    on:mouseleave={resumeIdleWatch}
+  >
     <Config />
     <TopBar />
     <section class="content">
@@ -91,16 +108,15 @@
       <Info />
     </section>
   </div>
-  <button
-    class="immersion-toggle glass"
-    class:active={$immersive}
-    title="Просторный режим (Ctrl/Cmd+I)"
-    aria-label="Просторный режим"
-    on:click={toggleImmersive}
+  <div
+    class="play-wrap"
+    on:pointerenter={pauseIdleWatch}
+    on:pointerleave={resumeIdleWatch}
+    on:mouseenter={pauseIdleWatch}
+    on:mouseleave={resumeIdleWatch}
   >
-    <IconArrowsMaximize size={18} />
-  </button>
-  <PlayButton />
+    <PlayButton />
+  </div>
   <ContextMenu />
   <Tooltip />
 </main>
@@ -152,21 +168,11 @@
     pointer-events: none;
   }
 
-  .immersion-toggle {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 40;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .immersion-toggle.active {
-    color: #9ad0ff;
+  /* Wrapper around PlayButton only to host the hover-pause handlers (BUG A).
+     `display: contents` keeps it transparent to layout so the PlayButton's own
+     fixed positioning and the canvas behind it are unaffected; the play
+     controls themselves remain the pointer targets. */
+  .play-wrap {
+    display: contents;
   }
 </style>

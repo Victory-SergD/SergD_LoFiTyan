@@ -2,12 +2,17 @@
   import { IconCloudRain } from "@tabler/icons-svelte";
   import { onDestroy, onMount } from "svelte";
   import { volumes } from "../../../stores/volume";
+  import { rainActive } from "../../../stores/weather";
   import { isTypingTarget } from "../../../utils/dom";
-  import RainAnimation from "./RainAnimation.svelte";
 
   let rain = new Audio("assets/engine/effects/rain.mp3");
   let isRaining = false;
   let currentVolume = 1;
+
+  // Mirror local on/off state into the shared store so the full-screen rain
+  // VISUAL can render OUTSIDE `.chrome` and stay visible in immersive mode,
+  // while this BUTTON stays in the dock and fades with the chrome (BUG C).
+  $: rainActive.set(isRaining);
 
   // Live volume from the store — no polling (audio-5).
   const unsub = volumes.subscribe((v) => {
@@ -96,7 +101,6 @@
   >
     <IconCloudRain size={25} color={isRaining ? "black" : "white"} />
   </button>
-  <RainAnimation {isRaining} />
 </div>
 
 <style>

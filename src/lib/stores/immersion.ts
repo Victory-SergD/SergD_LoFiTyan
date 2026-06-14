@@ -26,6 +26,26 @@ export function toggleImmersive(): void {
   }
 }
 
+/**
+ * Pause the auto-hide while the pointer is over the controls (BUG A). Ensures
+ * the controls are shown (immersive=false) and freezes the idle countdown so
+ * the chrome is never hidden out from under the cursor. No-op if no watch is
+ * active.
+ */
+export function pauseIdleWatch(): void {
+  if (get(immersive)) immersive.set(false);
+  if (activeTimer) activeTimer.pause();
+}
+
+/**
+ * Resume the auto-hide after the pointer leaves the controls (BUG A). Re-arms a
+ * fresh idle countdown so the chrome hides ~IMMERSION_IDLE_MS later if the user
+ * stays over the scene/away. No-op if no watch is active.
+ */
+export function resumeIdleWatch(): void {
+  if (activeTimer) activeTimer.resume();
+}
+
 // setTimeout returns `number` in the DOM lib and `Timeout` under @types/node;
 // accept either so injected timers (tests) and the browser default both type-check.
 type TimeoutId = ReturnType<typeof setTimeout> | number;
@@ -46,6 +66,14 @@ export interface IdleTimer {
   reset(): void;
   /** Force the internal idle/active flag (used to sync with a manual toggle). */
   setIdle(value: boolean): void;
+  /**
+   * Pause the countdown: cancel any pending onIdle and ignore activity/reset
+   * until resume(). While paused the timer will NEVER fire onIdle, so the
+   * chrome can't be hidden out from under the cursor (BUG A).
+   */
+  pause(): void;
+  /** Resume after a pause and re-arm a fresh countdown. */
+  resume(): void;
 }
 
 /**
@@ -54,15 +82,25 @@ export interface IdleTimer {
  * - activity(): user did something -> if we were idle, fire onActive; reset countdown
  * - after idleMs of no activity -> fire onIdle (and remember we are idle)
  * - stop(): cancel any pending countdown
+ * - pause()/resume(): freeze the countdown while the cursor is over the controls
  */
 export function createIdleTimer(opts: IdleTimerOptions): IdleTimer {
   const setT = opts.setTimeoutFn ?? setTimeout;
   const clearT = opts.clearTimeoutFn ?? clearTimeout;
   let handle: TimeoutId | null = null;
   let isIdle = false;
+  let paused = false;
+
+  function clearPending() {
+    if (handle !== null) {
+      clearT(handle);
+      handle = null;
+    }
+  }
 
   function arm() {
-    if (handle !== null) clearT(handle);
+    if (paused) return; // never arm an idle countdown while paused
+    clearPending();
     handle = setT(() => {
       isIdle = true;
       opts.onIdle();
@@ -75,6 +113,7 @@ export function createIdleTimer(opts: IdleTimerOptions): IdleTimer {
       arm();
     },
     activity() {
+      if (paused) return; // ignore activity while paused; resume() re-arms
       if (isIdle) {
         isIdle = false;
         opts.onActive();
@@ -82,16 +121,25 @@ export function createIdleTimer(opts: IdleTimerOptions): IdleTimer {
       arm();
     },
     stop() {
-      if (handle !== null) {
-        clearT(handle);
-        handle = null;
-      }
+      clearPending();
     },
     reset() {
       arm();
     },
     setIdle(value: boolean) {
       isIdle = value;
+    },
+    pause() {
+      paused = true;
+      // Cancel any pending idle tick so it can't fire while the cursor is over
+      // the controls. Treat the timer as "active" so chrome stays visible.
+      isIdle = false;
+      clearPending();
+    },
+    resume() {
+      if (!paused) return;
+      paused = false;
+      arm(); // re-arm a fresh idle countdown
     },
   };
 }

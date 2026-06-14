@@ -1,12 +1,14 @@
 <script lang="ts">
-  export let isRaining = false;
+  import { rainActive } from "../../../stores/weather";
+
+  // Full-screen rain ambiance. Rendered OUTSIDE `.chrome` (as a sibling of the
+  // Canvas) so it persists when the controls auto-hide in immersive mode, like
+  // the character art (BUG C). Reads the shared store directly.
 </script>
 
-<div>
-  {#if isRaining}
-    <div class="rain" />
-  {/if}
-</div>
+{#if $rainActive}
+  <div class="rain" aria-hidden="true" />
+{/if}
 
 <style>
   .rain {
@@ -15,7 +17,10 @@
     left: -100vw;
     width: 300vw;
     height: 110vh;
-    z-index: -1; /* behind the content */
+    /* Ambiance layer: above the Canvas background (z-index:0) but below the
+       chrome content (z-index:20+). Independent of the chrome opacity fade. */
+    z-index: 5;
+    pointer-events: none;
     background: url("/rain.png");
     animation: rain 0.3s linear infinite;
   }
