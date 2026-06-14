@@ -1,40 +1,41 @@
 <script lang="ts">
   import { IconCloudRain } from "@tabler/icons-svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { volumes } from "../../../stores/volume";
   import RainAnimation from "./RainAnimation.svelte";
-
-  export let volume: number;
 
   let rain = new Audio("assets/engine/effects/rain.mp3");
   let isRaining = false;
+  let currentVolume = 1;
+
+  // Live volume from the store — no polling (audio-5).
+  const unsub = volumes.subscribe((v) => {
+    currentVolume = v.effects.rain ?? 1;
+    rain.volume = currentVolume;
+  });
+  onDestroy(() => unsub());
 
   function toggleRain() {
     if (isRaining) {
       rain.pause();
     } else {
-      rain.play();
       rain.loop = true;
-      rain.volume = volume;
+      rain.volume = currentVolume;
+      rain.play();
     }
-
     isRaining = !isRaining;
   }
 
-  // Shortuct to toggle rain with "A" key
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "a") {
-      toggleRain();
-    }
-  });
-
   onMount(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && el.closest("input")) return;
+      if (e.key === "a") toggleRain();
+    };
+    window.addEventListener("keydown", handleKeydown);
     window.addEventListener("lofi-toggle-rain", toggleRain);
-    
-    setInterval(() => {
-      rain.volume = volume;
-    },100);
-
     return () => {
+      window.removeEventListener("keydown", handleKeydown);
       window.removeEventListener("lofi-toggle-rain", toggleRain);
     };
   });

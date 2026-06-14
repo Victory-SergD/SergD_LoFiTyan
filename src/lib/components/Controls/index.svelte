@@ -4,31 +4,17 @@
   import Rain from "./Rain/index.svelte";
   import Settings from "./Settings/index.svelte";
   import Thunder from "./Thunder/index.svelte";
+  import { volumes } from "../../stores/volume";
 
-  const STORAGE_KEY = "Volumes";
-  const DEFFAULT_VOLUMES = {
-    rain: 1,
-    thunder: 1,
-    campfire: 1,
-    jungle: 1,
-    main_track: 1,
-  };
-  // Load previous vols or defualt
-  let volumes =
-    JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFFAULT_VOLUMES;
-
-  // Update
-  setInterval(() => {
-    volumes = volumes =
-      JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFFAULT_VOLUMES;
-  }, 200);
+  // Effect children read their own volume from the store; no polling here (audio-5).
+  $: fx = $volumes.effects;
 </script>
 
 <div class="controls glass">
-  <Rain volume={volumes.rain} />
-  <Thunder volume={volumes.thunder} />
-  <Jungle volume={volumes.jungle} />
-  <CampFire volume={volumes.campfire} />
+  <Rain />
+  <Thunder volume={fx.thunder ?? 1} />
+  <Jungle volume={fx.jungle ?? 1} />
+  <CampFire volume={fx.campfire ?? 1} />
   <Settings />
 </div>
 

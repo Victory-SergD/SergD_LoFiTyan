@@ -1,42 +1,29 @@
 <script lang="ts">
     import { t } from "../../../locales/store";
-    const STORAGE_KEY = "Volumes";
-    const DEFFAULT_VOLUMES = {
-        rain: 1,
-        thunder: 1,
-        campfire: 1,
-        jungle: 1,
-        main_track: 1,
-    };
-    // Load previous vols or defualt
-    let volumes =
-        JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFFAULT_VOLUMES;
+    import { volumes, setMaster, setEffectVolume } from "../../../stores/volume";
 
-    // Save current volumes to local storage
-    function SaveVolume() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(volumes));
-    }
+    // Sliders read from the volumes store and write via its setters; the store
+    // owns persistence (key "lofityan.volumes") — no legacy "Volumes" writes here.
+    $: rainVolume = $volumes.effects.rain ?? 1;
+    $: thunderVolume = $volumes.effects.thunder ?? 1;
+    $: jungleVolume = $volumes.effects.jungle ?? 1;
+    $: campfireVolume = $volumes.effects.campfire ?? 1;
+    $: mainTrackVolume = $volumes.master;
 
-    // Updater functions for each volume knob
-    function updateRainVolume(e) {
-        volumes.rain = parseFloat(e.target.value);
-        SaveVolume();
+    function updateRainVolume(e: Event) {
+        setEffectVolume("rain", parseFloat((e.target as HTMLInputElement).value));
     }
-    function updateThunderVolume(e) {
-        volumes.thunder = parseFloat(e.target.value);
-        SaveVolume();
+    function updateThunderVolume(e: Event) {
+        setEffectVolume("thunder", parseFloat((e.target as HTMLInputElement).value));
     }
-    function updateJungleVolume(e) {
-        volumes.jungle = parseFloat(e.target.value);
-        SaveVolume();
+    function updateJungleVolume(e: Event) {
+        setEffectVolume("jungle", parseFloat((e.target as HTMLInputElement).value));
     }
-    function updateFireVolume(e) {
-        volumes.campfire = parseFloat(e.target.value);
-        SaveVolume();
+    function updateFireVolume(e: Event) {
+        setEffectVolume("campfire", parseFloat((e.target as HTMLInputElement).value));
     }
-    function updateMainTrackVolume(e) {
-        volumes.main_track = parseFloat(e.target.value);
-        SaveVolume();
+    function updateMainTrackVolume(e: Event) {
+        setMaster(parseFloat((e.target as HTMLInputElement).value));
     }
 </script>
 
@@ -44,11 +31,11 @@
     <h4>{$t.settings.volume.title}</h4>
     <section id="rain-volume">
         <h5>{$t.settings.volume.rain}</h5>
-        <p>{Math.round(volumes.rain * 100)}</p>
+        <p>{Math.round(rainVolume * 100)}</p>
         <input
             id="volume-slider"
             type="range"
-            bind:value={volumes.rain}
+            value={rainVolume}
             min="0.01"
             max="1"
             step="0.01"
@@ -57,11 +44,11 @@
     </section>
     <section id="thunder-volume">
         <h5>{$t.settings.volume.thunder}</h5>
-        <p>{Math.round(volumes.thunder * 100)}</p>
+        <p>{Math.round(thunderVolume * 100)}</p>
         <input
             id="volume-slider"
             type="range"
-            bind:value={volumes.thunder}
+            value={thunderVolume}
             min="0.01"
             max="1"
             step="0.01"
@@ -70,11 +57,11 @@
     </section>
     <section id="jungle-volume">
         <h5>{$t.settings.volume.jungle}</h5>
-        <p>{Math.round(volumes.jungle * 100)}</p>
+        <p>{Math.round(jungleVolume * 100)}</p>
         <input
             id="volume-slider"
             type="range"
-            bind:value={volumes.jungle}
+            value={jungleVolume}
             min="0.01"
             max="1"
             step="0.01"
@@ -83,11 +70,11 @@
     </section>
     <section id="fire-volume">
         <h5>{$t.settings.volume.campfire}</h5>
-        <p>{Math.round(volumes.campfire * 100)}</p>
+        <p>{Math.round(campfireVolume * 100)}</p>
         <input
             id="volume-slider"
             type="range"
-            bind:value={volumes.campfire}
+            value={campfireVolume}
             min="0.01"
             max="1"
             step="0.01"
@@ -96,11 +83,11 @@
     </section>
     <section id="main-track-volume">
         <h5>{$t.settings.volume.main_track}</h5>
-        <p>{Math.round(volumes.main_track * 100)}</p>
+        <p>{Math.round(mainTrackVolume * 100)}</p>
         <input
             id="volume-slider"
             type="range"
-            bind:value={volumes.main_track}
+            value={mainTrackVolume}
             min="0.01"
             max="1"
             step="0.01"
