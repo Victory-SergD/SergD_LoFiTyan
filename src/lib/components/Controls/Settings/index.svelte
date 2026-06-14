@@ -195,13 +195,29 @@
     }
   }
 
-  /* Portrait: gear sits in the bottom area, so open the panel UPWARD and
-     cap its height so it fits in the viewport without clipping the dock. */
+  /* Portrait: the gear lives in the effects dock near the TOP of the page.
+     The dock (.controls.glass) carries a `backdrop-filter`, which makes it the
+     containing block for `position: fixed` descendants — so `fixed` + `bottom`
+     resolves against the 50px-tall dock, not the viewport, and pushed the panel
+     off-screen (negative top).
+
+     Fix: open the panel DOWNWARD from the dock instead. `top: 100%` drops it
+     just under the dock; spanning the dock's width keeps it horizontally
+     on-screen; `max-height: calc(100vh - 86px)` (vh = real viewport) caps it so
+     its bottom stays within the viewport. `overflow-y: auto` (base rule) keeps
+     long content scrollable. */
   @media (orientation: portrait) {
     .settings-container {
-      top: auto;
-      bottom: 60px;
-      max-height: 70vh;
+      position: fixed;
+      top: 100%;
+      bottom: auto;
+      left: 0;
+      right: 0;
+      width: auto;
+      /* border-box so the 20px padding is counted inside max-height,
+         otherwise the panel overflows the viewport by 2*padding. */
+      box-sizing: border-box;
+      max-height: calc(100vh - 86px);
       height: auto;
     }
   }

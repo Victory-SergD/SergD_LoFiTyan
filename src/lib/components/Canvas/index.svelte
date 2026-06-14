@@ -33,16 +33,18 @@
     z-index: 1;
   }
 
-  /* Portrait (variant B): keep the visualizer low — just above/behind the
-     bottom play dock — so it never clutters the dead-center over the
-     character. It sits at z-index:1, behind the controls (z-index:30). */
+  /* Portrait (variant B): make the visualizer a SHORT, subtle bar hugging the
+     very bottom of the screen, sitting behind the compact play dock so it never
+     clutters the center over the character. It stays at z-index:1, behind the
+     controls (z-index:30), and its reduced height keeps the bottom dock tight. */
   @media (orientation: portrait) {
     .canvas-visualizer {
       left: 50%;
       transform: translateX(-50%);
-      bottom: clamp(150px, 22vh, 220px);
-      height: clamp(70px, 14vh, 120px);
-      width: min(78vw, 300px);
+      bottom: clamp(10px, 2vh, 20px);
+      height: clamp(48px, 8vh, 72px);
+      width: min(72vw, 280px);
+      opacity: 0.55;
     }
   }
 </style>

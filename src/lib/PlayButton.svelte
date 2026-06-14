@@ -621,18 +621,21 @@
     }
 
     /* Chords sit just ABOVE the bottom play dock (the .controls block is
-       ~70px play + ~50px New-music button = ~120px tall, plus the 24px gap),
-       so anchor the chord list at ~150px from the bottom. */
+       ~70px play + ~40px New-music button + gaps ≈ 135px tall), kept as a
+       single compact NON-wrapping row so the whole play cluster stays tight
+       in the bottom dock instead of sprawling up over the character. */
     .progressionList {
       position: fixed;
       left: 50%;
-      transform: translateX(-50%) scale(0.85);
+      transform: translateX(-50%) scale(0.72);
       transform-origin: bottom center;
-      bottom: 158px;
+      bottom: 150px;
       top: auto;
       width: auto;
-      max-width: 96vw;
+      max-width: 100vw;
       margin: 0;
+      flex-wrap: nowrap;
+      gap: 8px;
       z-index: 30;
     }
   }
