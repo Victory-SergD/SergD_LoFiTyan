@@ -8,7 +8,6 @@
   import { onDestroy, onMount } from "svelte";
 // @ts-ignore
   import * as Tone from "tone";
-  import Visualizer from "../lib/components/Visualizer/index.svelte";
   import ChordProgression from "../lib/engine/Chords/ChordProgression";
   import intervalWeights from "../lib/engine/Chords/IntervalWeights";
   import Keys from "../lib/engine/Chords/Keys";
@@ -440,11 +439,6 @@
       </ol>
     {/if}
   {/if}
-  {#if Tone.Transport.state === "started"}
-    <div class="visualizer-container">
-      <Visualizer audio={Tone.Master} />
-    </div>
-  {/if}
 </div>
 
 <style>
@@ -524,15 +518,6 @@
     border-color:#ffffff66;
   }
 
-  .visualizer-container {
-    position: absolute;
-    left: 30px;
-    bottom: 30px;
-    height: 180px;
-    overflow: hidden;
-    margin-top: 10px;
-  }
-
   @media only screen and (max-width: 600px) {
     .play-button {
       margin-bottom: 40px;
@@ -542,9 +527,6 @@
       left: 0;
       width: 100vw;
       transform: scale(0.8);
-    }
-    .visualizer-container {
-      display: none;
     }
   }
 </style>

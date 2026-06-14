@@ -3,6 +3,7 @@
   import { dir, locale } from "./lib/locales/store";
   import PlayButton from "./lib/PlayButton.svelte";
   import TrackList from "./lib/components/TrackList/index.svelte";
+  import Canvas from "./lib/components/Canvas/index.svelte";
   import Controls from "./lib/components/Controls/index.svelte";
   import TopBar from "./lib/components/TopBar/TopBar.svelte";
   import Info from "./lib/components/InfoBox/Info.svelte";
@@ -57,7 +58,8 @@
   }
 </script>
 
-<main id="bg" class="container">
+<main class="container">
+  <Canvas />
   <Config />
   <TopBar />
   <section class="content">
@@ -73,24 +75,31 @@
 <style>
   .container {
     max-width: 100vw;
-    max-height: 100vh;
+    min-height: 100vh;
     height: 100vh;
     position: relative;
     overflow: hidden;
-    background-color: #0a0a0a;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    transition: background-image 0.3s ease;
   }
 
   .content {
     padding: 24px;
     padding-top: 30px;
     height: 100vh;
+    position: relative;
     z-index: 20;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+  }
+
+  @media (orientation: portrait) {
+    .content {
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: stretch;
+      gap: 16px;
+      height: auto;
+      min-height: 100vh;
+    }
   }
 </style>
