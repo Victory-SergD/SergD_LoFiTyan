@@ -1,124 +1,19 @@
 <script lang="ts">
   import { IconChevronDown } from "@tabler/icons-svelte";
-  import TrackListItem from "./TrackListItem.svelte";
   import { onMount } from "svelte";
+  import { atmosphere, toggleLayer, stopAll } from "../../stores/atmosphere";
+  import TrackListItem from "./TrackListItem.svelte";
 
-  let tracks = [
-    {
-      id: 1,
-      track: "Wind-Mark_DiAngelo-1940285615.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 2,
-      track: "small-waves-onto-the-sand-143040.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 3,
-      track: "night-ambience-17064.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 4,
-      track: "urban-seagulls-30068.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 5,
-      track: "office-ambience-6322.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 6,
-      track: "city-ambience-9272.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 7,
-      track: "old-server-turning-on-and-off-24540.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 8,
-      track: "train-to-munich-germany.mp3",
-      isPlaying: false,
-    },
-    {
-      id: 9,
-      track: "underwater-white-noise-46423.mp3",
-      isPlaying: false,
-    },
-  ];
-
-  let activeAudios = [];
   let isMobileHidden = false; // Used to hide track list on mobile due to tight space
-
-  // Shortcut for stoping all effects with "k" key
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "k") {
-      activeAudios.forEach((item) => {
-        item.audio.pause();
-      });
-      console.log("activeAudios", activeAudios);
-      activeAudios = [];
-      tracks.forEach((track) => {
-        track.isPlaying = false;
-      });
-    }
-  });
-
-  // Add toggle for each track with number keys
-  //  through (1-9) on keyboard
-  for (let i = 1; i < 10; i++) {
-    window.addEventListener("keydown", (e) => {
-      if (e.key === i.toString()) {
-        tracks[i - 1].isPlaying = !tracks[i - 1].isPlaying;
-        if (tracks[i - 1].isPlaying) {
-          const audio = new Audio(
-            `assets/engine/tracks/${tracks[i - 1].track}`,
-          );
-          audio.play();
-          audio.loop = true;
-          activeAudios.push({
-            id: tracks[i - 1].id,
-            audio,
-          });
-          visibleTrackId = i;
-        } else {
-          activeAudios.forEach((item) => {
-            if (item.id === tracks[i - 1].id) {
-              item.audio.pause();
-              // Remove from activeAudios
-              activeAudios = activeAudios.filter(
-                (item) => item.id !== tracks[i - 1].id,
-              );
-            }
-          });
-        }
-      }
-    });
-  }
-
-  // Visible tracks animation
-  let visibleTrackId = 1;
-  window.addEventListener("keydown", (e) => {
-    // Ignore change when event is targeting inputs
-    if (e.target instanceof HTMLElement && !e.target.closest("input")) {
-      if (e.key == "ArrowUp") {
-        prevTrack();
-      }
-      if (e.key == "ArrowDown") {
-        nextTrack();
-      }
-    }
-  });
+  let visibleTrackId = "1";
 
   function nextTrack() {
-    visibleTrackId < 9 ? visibleTrackId++ : (visibleTrackId = 1);
+    const n = Number(visibleTrackId);
+    visibleTrackId = String(n < 9 ? n + 1 : 1);
   }
   function prevTrack() {
-    visibleTrackId > 1 ? visibleTrackId-- : (visibleTrackId = 9);
+    const n = Number(visibleTrackId);
+    visibleTrackId = String(n > 1 ? n - 1 : 9);
   }
 
   let lastScrollTime = 0;
@@ -127,7 +22,6 @@
   function handleScroll(event: WheelEvent) {
     const currentTime = Date.now();
     if (currentTime - lastScrollTime < SCROLL_THROTTLE) return;
-
     if (event.deltaY > 0) {
       nextTrack();
       lastScrollTime = currentTime;
@@ -137,46 +31,51 @@
     }
   }
 
-  function toggleTrack(id: number) {
-    tracks[id - 1].isPlaying = !tracks[id - 1].isPlaying;
-    if (tracks[id - 1].isPlaying) {
-      const audio = new Audio(`assets/engine/tracks/${tracks[id - 1].track}`);
-      audio.play();
-      audio.loop = true;
-      activeAudios.push({
-        id: tracks[id - 1].id,
-        audio,
-      });
-      visibleTrackId = id;
-    } else {
-      activeAudios.forEach((item) => {
-        if (item.id === tracks[id - 1].id) {
-          item.audio.pause();
-          // Remove from activeAudios
-          activeAudios = activeAudios.filter(
-            (item) => item.id !== tracks[id - 1].id,
-          );
-        }
-      });
-    }
-    tracks = tracks; // Trigger reactivity
+  function isTypingTarget(e: KeyboardEvent): boolean {
+    const el = e.target as HTMLElement | null;
+    return !!el && (el.closest("input") !== null || el.isContentEditable);
   }
 
   onMount(() => {
-    const handleToggleTrack = (e: CustomEvent) => {
-      if (e.detail && e.detail.id) {
-        toggleTrack(e.detail.id);
+    // ONE keydown handler for digits, stop-all, and arrows (state-4).
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (isTypingTarget(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key >= "1" && e.key <= "9") {
+        toggleLayer(e.key);
+        visibleTrackId = e.key;
+        return;
+      }
+      if (e.key === "k") {
+        stopAll();
+        return;
+      }
+      if (e.key === "ArrowUp") prevTrack();
+      if (e.key === "ArrowDown") nextTrack();
+    };
+
+    const handleToggleTrack = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.id !== undefined) {
+        toggleLayer(String(detail.id));
+        visibleTrackId = String(detail.id);
       }
     };
-    const handleSettingsOpen = (e: CustomEvent) => {
-      if (e.detail && e.detail.isActive !== undefined) {
-        isMobileHidden = e.detail.isActive;
+
+    const handleSettingsOpen = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.isActive !== undefined) {
+        isMobileHidden = detail.isActive;
       }
     };
+
+    window.addEventListener("keydown", handleKeydown);
     window.addEventListener("lofi-toggle-track", handleToggleTrack);
     window.addEventListener("settings-open-changed", handleSettingsOpen);
+
     return () => {
+      window.removeEventListener("keydown", handleKeydown);
       window.removeEventListener("lofi-toggle-track", handleToggleTrack);
+      window.removeEventListener("settings-open-changed", handleSettingsOpen);
     };
   });
 </script>
@@ -187,10 +86,9 @@
 >
   <div class="wrapper">
     <div class="carousel">
-      {#each tracks as track}
+      {#each $atmosphere as layer (layer.id)}
         <TrackListItem
-          {activeAudios}
-          {track}
+          {layer}
           {visibleTrackId}
           setMeVisible={(id) => (visibleTrackId = id)}
         />

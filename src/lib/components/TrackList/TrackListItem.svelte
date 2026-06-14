@@ -1,75 +1,49 @@
 <script lang="ts">
-  import { afterUpdate, onMount } from "svelte";
+  import { afterUpdate } from "svelte";
   import { t } from "../../locales/store";
+  import { toggleLayer, setLayerVolume } from "../../stores/atmosphere";
+  import type { AtmoLayer } from "../../stores/atmosphere";
 
-  export let setMeVisible;
-  export let activeAudios = [];
-  export let track = {
-    id: -1,
-    track: "none",
+  export let setMeVisible: (id: string) => void;
+  export let layer: AtmoLayer = {
+    id: "-1",
+    name: "none",
+    src: "none",
     isPlaying: false,
+    volume: 0.5,
   };
+  export let visibleTrackId = "-1";
 
-  export let visibleTrackId = -1;
   let trackItemAnimationClass = "item-hidden";
-  let volume = 0.5;
 
   function updateAnimation() {
-    if (track.id == visibleTrackId) {
+    const id = Number(layer.id);
+    const vis = Number(visibleTrackId);
+    if (id == vis) {
       trackItemAnimationClass = "item-visible";
-    } else if (track.id + 1 == visibleTrackId) {
+    } else if (id + 1 == vis) {
       trackItemAnimationClass = "item-before-visible";
-    } else if (track.id - 1 == visibleTrackId) {
+    } else if (id - 1 == vis) {
       trackItemAnimationClass = "item-after-visible";
-    }
-    // Edge tracks
-    else if (track.id == 9 && visibleTrackId == 1) {
+    } else if (id == 9 && vis == 1) {
       trackItemAnimationClass = "item-before-visible";
-    } else if (track.id == 1 && visibleTrackId == 9) {
+    } else if (id == 1 && vis == 9) {
       trackItemAnimationClass = "item-after-visible";
     } else {
       trackItemAnimationClass = "item-hidden";
     }
   }
 
-  function handleVolumeChange(event) {
-    volume = event.target.value;
-    localStorage.setItem("audioVolume", volume.toString());
-    activeAudios.forEach((item) => {
-      if (item.id === track.id) {
-        item.audio.volume = volume;
-      }
-    });
+  function handleVolumeChange(event: Event) {
+    const v = parseFloat((event.target as HTMLInputElement).value);
+    setLayerVolume(layer.id, v);
   }
 
-  function playTrack() {
-    const audio = new Audio(`assets/engine/tracks/${track.track}`);
-    audio.volume = volume;
-    audio.play();
-    audio.loop = true;
-    activeAudios.push({
-      id: track.id,
-      audio,
-    });
-    track.isPlaying = true;
-    setMeVisible(track.id);
+  function onCardClick() {
+    // Dispatch to the store; never mutate the prop (state-2).
+    toggleLayer(layer.id);
+    if (!layer.isPlaying) setMeVisible(layer.id);
   }
-
-  function pauseTrack() {
-    activeAudios.forEach((item) => {
-      if (item.id === track.id) {
-        item.audio.pause();
-      }
-    });
-    track.isPlaying = false;
-  }
-
-  onMount(() => {
-    const savedVolume = localStorage.getItem("audioVolume");
-    if (savedVolume !== null) {
-      volume = parseFloat(savedVolume);
-    }
-  });
 
   updateAnimation();
   afterUpdate(updateAnimation);
@@ -78,33 +52,23 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   on:contextmenu={() => {
-    if (!track.isPlaying) {
-      setMeVisible(track.id);
-    }
+    if (!layer.isPlaying) setMeVisible(layer.id);
   }}
-  on:click={() => {
-    track.isPlaying ? pauseTrack() : playTrack();
-  }}
+  on:click={onCardClick}
   class={"carousel__item " + trackItemAnimationClass}
 >
-  <div
-    class={"carousel__item-body glass " + (track.isPlaying ? "playing" : "")}
-  >
-    <img
-      class="carousel__item-body__img"
-      src="assets/images/{track.id}.jpg"
-      alt=""
-    />
+  <div class={"carousel__item-body glass " + (layer.isPlaying ? "playing" : "")}>
+    <img class="carousel__item-body__img" src="assets/images/{layer.id}.jpg" alt="" />
     <div>
-      <p id="title">Track {track.id}</p>
-      <p id="info">{$t.tracks[track.id].quote}</p>
-      {#if track.isPlaying}
+      <p id="title">Track {layer.id}</p>
+      <p id="info">{$t.tracks[layer.id].quote}</p>
+      {#if layer.isPlaying}
         <input
           type="range"
           min="0"
           max="1"
           step="0.01"
-          bind:value={volume}
+          value={layer.volume}
           on:input={handleVolumeChange}
           on:click={(e) => e.stopPropagation()}
           id="volume-slider"
