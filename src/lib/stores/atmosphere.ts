@@ -1,5 +1,6 @@
 // src/lib/stores/atmosphere.ts
 import { writable, get } from "svelte/store";
+import { volumes } from "./volume";
 
 export interface AtmoLayer {
   id: string;
@@ -49,6 +50,24 @@ export function setAudioFactory(fn: AudioFactory): void {
 // Single owner of the live HTMLAudioElement instances, keyed by layer id.
 const elements = new Map<string, HTMLAudioElement>();
 
+// Master volume, mirrored from the volumes store. Every HTMLAudio element's
+// effective volume is its per-channel volume × master (VOLUME-1). The master is
+// applied only to the live audio element — never persisted into the layer's
+// per-channel `volume` field.
+let master = get(volumes).master;
+volumes.subscribe((v) => {
+  master = v.master;
+  // Re-apply master to all currently-live elements using each layer's
+  // per-channel volume from the atmosphere store.
+  const layers = get(atmosphere);
+  for (const [id, audio] of elements) {
+    const layer = layers.find((l) => l.id === id);
+    if (layer) {
+      audio.volume = layer.volume * master;
+    }
+  }
+});
+
 function startLayer(layer: AtmoLayer): void {
   // Guard: never create a second element for an id already playing.
   if (elements.has(layer.id)) {
@@ -58,7 +77,7 @@ function startLayer(layer: AtmoLayer): void {
   }
   const audio = audioFactory(layer.src);
   audio.loop = true;
-  audio.volume = layer.volume;
+  audio.volume = layer.volume * master;
   audio.play();
   elements.set(layer.id, audio);
 }
@@ -111,7 +130,7 @@ export function stopAll(): void {
 export function setLayerVolume(id: string, v: number): void {
   const audio = elements.get(id);
   if (audio) {
-    audio.volume = v;
+    audio.volume = v * master;
   }
   atmosphere.update((layers) =>
     layers.map((l) => (l.id === id ? { ...l, volume: v } : l))

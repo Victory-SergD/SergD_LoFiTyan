@@ -11,7 +11,8 @@
 
   // Live volume from the store — no polling (audio-5).
   const unsub = volumes.subscribe((v) => {
-    currentVolume = v.effects.rain ?? 1;
+    const m = v.master ?? 1;
+    currentVolume = (v.effects.rain ?? 1) * m;
     rain.volume = currentVolume;
   });
   onDestroy(() => {

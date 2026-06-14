@@ -10,7 +10,8 @@
 
   // Live volume from the store — no polling (audio-5).
   const unsub = volumes.subscribe((v) => {
-    currentVolume = v.effects.campfire ?? 1;
+    const m = v.master ?? 1;
+    currentVolume = (v.effects.campfire ?? 1) * m;
     fire.volume = currentVolume;
   });
   onDestroy(() => {

@@ -153,3 +153,82 @@ describe("atmosphere audio side-effects", () => {
     expect(get(atmosphere)[0].volume).toBe(0.3);
   });
 });
+
+describe("atmosphere master volume (VOLUME-1)", () => {
+  it("startLayer applies per-channel × master to the live element", async () => {
+    const created: FakeAudio[] = [];
+    const { atmosphere, toggleLayer, setLayerVolume, setAudioFactory } = await import("./atmosphere");
+    const { setMaster } = await import("./volume");
+    setAudioFactory((src) => {
+      const a = new FakeAudio(src);
+      created.push(a);
+      return a as unknown as HTMLAudioElement;
+    });
+    const id = get(atmosphere)[0].id;
+    setMaster(0.5);
+    setLayerVolume(id, 0.8); // per-channel = 0.8
+    toggleLayer(id); // start AFTER setting master + per-channel
+    expect(created[0].volume).toBeCloseTo(0.8 * 0.5); // 0.4
+    // the stored per-channel value stays untouched by master
+    expect(get(atmosphere).find((l) => l.id === id)!.volume).toBe(0.8);
+  });
+
+  it("setLayerVolume applies per-channel × master to the live element", async () => {
+    const created: FakeAudio[] = [];
+    const { atmosphere, toggleLayer, setLayerVolume, setAudioFactory } = await import("./atmosphere");
+    const { setMaster } = await import("./volume");
+    setAudioFactory((src) => {
+      const a = new FakeAudio(src);
+      created.push(a);
+      return a as unknown as HTMLAudioElement;
+    });
+    const id = get(atmosphere)[0].id;
+    toggleLayer(id);
+    setMaster(0.25);
+    setLayerVolume(id, 0.6);
+    expect(created[0].volume).toBeCloseTo(0.6 * 0.25); // 0.15
+    expect(get(atmosphere).find((l) => l.id === id)!.volume).toBe(0.6);
+  });
+
+  it("changing master re-applies per-channel × master to all live elements", async () => {
+    const created: FakeAudio[] = [];
+    const { atmosphere, toggleLayer, setLayerVolume, setAudioFactory } = await import("./atmosphere");
+    const { setMaster } = await import("./volume");
+    setAudioFactory((src) => {
+      const a = new FakeAudio(src);
+      created.push(a);
+      return a as unknown as HTMLAudioElement;
+    });
+    const ids = get(atmosphere).map((l) => l.id);
+    toggleLayer(ids[0]);
+    toggleLayer(ids[1]);
+    setLayerVolume(ids[0], 0.4);
+    setLayerVolume(ids[1], 0.9);
+    // master starts at 1 → elements at their per-channel volumes
+    expect(created[0].volume).toBeCloseTo(0.4);
+    expect(created[1].volume).toBeCloseTo(0.9);
+    // bump master and assert every live element re-attenuates
+    setMaster(0.5);
+    expect(created[0].volume).toBeCloseTo(0.4 * 0.5); // 0.2
+    expect(created[1].volume).toBeCloseTo(0.9 * 0.5); // 0.45
+    // stored per-channel values are unchanged
+    expect(get(atmosphere).find((l) => l.id === ids[0])!.volume).toBe(0.4);
+    expect(get(atmosphere).find((l) => l.id === ids[1])!.volume).toBe(0.9);
+  });
+
+  it("master = 1 is a no-op (effective volume equals per-channel)", async () => {
+    const created: FakeAudio[] = [];
+    const { atmosphere, toggleLayer, setLayerVolume, setAudioFactory } = await import("./atmosphere");
+    const { setMaster } = await import("./volume");
+    setAudioFactory((src) => {
+      const a = new FakeAudio(src);
+      created.push(a);
+      return a as unknown as HTMLAudioElement;
+    });
+    const id = get(atmosphere)[0].id;
+    setMaster(1);
+    toggleLayer(id);
+    setLayerVolume(id, 0.7);
+    expect(created[0].volume).toBe(0.7);
+  });
+});
