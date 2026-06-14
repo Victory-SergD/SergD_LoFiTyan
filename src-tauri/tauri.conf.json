@@ -28,10 +28,11 @@
       {
         "fullscreen": false,
         "title": "Lofi Engine",
-        "width": 980,
-        "height": 580,
-        "minWidth": 930,
-        "minHeight": 530,
+        "width": 480,
+        "height": 900,
+        "minWidth": 360,
+        "minHeight": 560,
+        "resizable": true,
         "decorations": false,
         "transparent": true
       }
