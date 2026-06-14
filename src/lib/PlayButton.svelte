@@ -20,7 +20,7 @@
   import { get } from "svelte/store";
   import { volumes } from "../lib/stores/volume";
   import { autoDjMode } from "../lib/stores/autodj";
-  import { toggleLayer } from "../lib/stores/atmosphere";
+  import { atmosphere, setLayer } from "../lib/stores/atmosphere";
   import { t } from "../lib/locales/store";
 
   // Convert linear volume (0 to 1) to dB
@@ -157,6 +157,11 @@
     // Idempotent — never calls toggle()/handleButtonAction(), so it can't
     // accidentally START audio. (audio-7)
     const handleStopAll = () => {
+      // Reconcile Auto-DJ ownership: after a stop-all everything is silenced,
+      // so the DJ no longer owns any layer/effect. Clearing prevents it from
+      // re-enabling a just-silenced sound on the next tick. (audio-9 / audio-10)
+      djLayerId = null;
+      djEffect = null;
       if (Tone.Transport.state === "started") {
         noise.stop();
         Tone.Transport.stop();
@@ -210,6 +215,13 @@
   let sectionBarLength = 32; // change section every 32 bars
   let isTransitioning = false;
 
+  // Auto-DJ single-owner state: the DJ tracks ONLY what IT turned on so it can
+  // cross-fade its own pick (turn its previous one off before a new one on),
+  // cap its own concurrent count at 1, and NEVER touch user-enabled sounds.
+  // (audio-9 / audio-10)
+  let djLayerId: string | null = null; // the one atmosphere layer the DJ owns
+  let djEffect: string | null = null; // the one weather effect the DJ owns
+
   function nextChord() {
     const nextProgress = progress === progression.length - 1 ? 0 : progress + 1;
     const nextKickOff = Math.random() < 0.15;
@@ -260,22 +272,53 @@
     hatOff = Math.random() < 0.22;
     melodyOff = Math.random() < 0.25;
 
-    // Smart Effects: Toggle environmental effects randomly
-    // Applied in ATMOSPHERE and WORLD
+    // Smart Effects: single-owner cross-fade of ONE DJ-owned weather effect.
+    // Applied in ATMOSPHERE and WORLD. The DJ uses EXPLICIT on/off (lofi-set-*),
+    // so it only ever manages its own pick and never silences a user-enabled
+    // effect. Cap = 1 DJ effect at a time. (audio-10)
     if ($autoDjMode === "ATMOSPHERE" || $autoDjMode === "WORLD") {
-      const effects = ["rain", "thunder", "jungle", "campfire"];
-      // 30% chance to toggle an effect
+      // 30% chance to rotate the DJ's effect
       if (Math.random() < 0.3) {
-        const effect = effects[Math.floor(Math.random() * effects.length)];
-        window.dispatchEvent(new CustomEvent(`lofi-toggle-${effect}`));
+        // Turn the DJ's previous pick OFF first (cross-fade), if it owns one.
+        if (djEffect) {
+          window.dispatchEvent(
+            new CustomEvent(`lofi-set-${djEffect}`, { detail: { on: false } })
+          );
+        }
+        const effects = ["rain", "thunder", "jungle", "campfire"];
+        const newEffect = effects[Math.floor(Math.random() * effects.length)];
+        window.dispatchEvent(
+          new CustomEvent(`lofi-set-${newEffect}`, { detail: { on: true } })
+        );
+        djEffect = newEffect;
       }
     }
 
-    // Smart layers: toggle an atmosphere layer via the store (no desync). WORLD only.
+    // Smart layers: single-owner cross-fade of ONE DJ-owned atmosphere layer.
+    // WORLD only. Reads fresh store state each tick; uses the idempotent
+    // setLayer (no blind toggle). Cap = 1 DJ layer; never touches a layer the
+    // user enabled. (audio-9)
     if ($autoDjMode === "WORLD") {
       if (Math.random() < 0.2) {
-        const layerId = String(Math.floor(Math.random() * 9) + 1); // "1".."9"
-        toggleLayer(layerId);
+        const layers = get(atmosphere);
+        // Turn the DJ's previous pick OFF first (cross-fade), if it owns one.
+        if (djLayerId) {
+          setLayer(djLayerId, false);
+        }
+        // Pick a NEW layer the user hasn't manually turned on (not currently
+        // playing) and that isn't the DJ's previous pick.
+        const candidates = layers.filter(
+          (l) => !l.isPlaying && l.id !== djLayerId
+        );
+        if (candidates.length > 0) {
+          const newId =
+            candidates[Math.floor(Math.random() * candidates.length)].id;
+          setLayer(newId, true);
+          djLayerId = newId;
+        } else {
+          // Nothing free to enable — DJ owns nothing this tick.
+          djLayerId = null;
+        }
       }
     }
 

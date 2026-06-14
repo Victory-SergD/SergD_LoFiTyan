@@ -53,14 +53,38 @@
     }
   }
 
+  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // toggleThunder(), so re-setting the same state can never double-trigger and
+  // the DJ never silences a user-enabled effect by accident. (audio-10)
+  function handleSet(e: Event) {
+    const on = (e as CustomEvent).detail?.on;
+    if (on && !isStorming) {
+      storm.loop = true;
+      storm.volume = currentVolume;
+      storm
+        .play()
+        .then(() => {
+          isStorming = true;
+        })
+        .catch(() => {
+          isStorming = false;
+        });
+    } else if (!on && isStorming) {
+      storm.pause();
+      isStorming = false;
+    }
+  }
+
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-thunder", toggleThunder);
+    window.addEventListener("lofi-set-thunder", handleSet);
     window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-thunder", toggleThunder);
+      window.removeEventListener("lofi-set-thunder", handleSet);
       window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });

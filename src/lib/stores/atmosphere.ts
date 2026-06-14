@@ -82,6 +82,25 @@ export function toggleLayer(id: string): void {
   atmosphere.set(reduceToggle(layers, id));
 }
 
+// Explicit, idempotent setter for the Auto-DJ (single-owner pattern).
+// Unlike toggleLayer, the desired state is given explicitly so re-setting a
+// layer to its current state is a no-op (never double-starts / double-stops).
+// User clicks keep using toggleLayer. (audio-9)
+export function setLayer(id: string, on: boolean): void {
+  const layers = get(atmosphere);
+  const target = layers.find((l) => l.id === id);
+  if (!target) return;
+  if (target.isPlaying === on) return; // already in the desired state
+  if (on) {
+    startLayer(target);
+  } else {
+    stopLayer(id);
+  }
+  atmosphere.set(
+    layers.map((l) => (l.id === id ? { ...l, isPlaying: on } : l))
+  );
+}
+
 export function stopAll(): void {
   for (const audio of elements.values()) {
     audio.pause();

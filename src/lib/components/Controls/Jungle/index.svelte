@@ -53,14 +53,38 @@
     }
   }
 
+  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // toggleJungle(), so re-setting the same state can never double-trigger and
+  // the DJ never silences a user-enabled effect by accident. (audio-10)
+  function handleSet(e: Event) {
+    const on = (e as CustomEvent).detail?.on;
+    if (on && !isActive) {
+      jungle.loop = true;
+      jungle.volume = currentVolume;
+      jungle
+        .play()
+        .then(() => {
+          isActive = true;
+        })
+        .catch(() => {
+          isActive = false;
+        });
+    } else if (!on && isActive) {
+      jungle.pause();
+      isActive = false;
+    }
+  }
+
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-jungle", toggleJungle);
+    window.addEventListener("lofi-set-jungle", handleSet);
     window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-jungle", toggleJungle);
+      window.removeEventListener("lofi-set-jungle", handleSet);
       window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });

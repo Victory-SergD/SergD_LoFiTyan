@@ -46,6 +46,28 @@
     }
   }
 
+  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // toggleRain(), so re-setting the same state can never double-trigger and
+  // the DJ never silences a user-enabled effect by accident. (audio-10)
+  function handleSet(e: Event) {
+    const on = (e as CustomEvent).detail?.on;
+    if (on && !isRaining) {
+      rain.loop = true;
+      rain.volume = currentVolume;
+      rain
+        .play()
+        .then(() => {
+          isRaining = true;
+        })
+        .catch(() => {
+          isRaining = false;
+        });
+    } else if (!on && isRaining) {
+      rain.pause();
+      isRaining = false;
+    }
+  }
+
   onMount(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (isTypingTarget(e)) return;
@@ -53,10 +75,12 @@
     };
     window.addEventListener("keydown", handleKeydown);
     window.addEventListener("lofi-toggle-rain", toggleRain);
+    window.addEventListener("lofi-set-rain", handleSet);
     window.addEventListener("lofi-stop-all", handleStopAll);
     return () => {
       window.removeEventListener("keydown", handleKeydown);
       window.removeEventListener("lofi-toggle-rain", toggleRain);
+      window.removeEventListener("lofi-set-rain", handleSet);
       window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });

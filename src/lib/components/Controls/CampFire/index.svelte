@@ -53,14 +53,38 @@
     }
   }
 
+  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // toggleFire(), so re-setting the same state can never double-trigger and
+  // the DJ never silences a user-enabled effect by accident. (audio-10)
+  function handleSet(e: Event) {
+    const on = (e as CustomEvent).detail?.on;
+    if (on && !isFire) {
+      fire.loop = true;
+      fire.volume = currentVolume;
+      fire
+        .play()
+        .then(() => {
+          isFire = true;
+        })
+        .catch(() => {
+          isFire = false;
+        });
+    } else if (!on && isFire) {
+      fire.pause();
+      isFire = false;
+    }
+  }
+
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-campfire", toggleFire);
+    window.addEventListener("lofi-set-campfire", handleSet);
     window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-campfire", toggleFire);
+      window.removeEventListener("lofi-set-campfire", handleSet);
       window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });

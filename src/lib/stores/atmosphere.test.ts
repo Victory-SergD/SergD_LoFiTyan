@@ -112,6 +112,32 @@ describe("atmosphere audio side-effects", () => {
     expect(get(atmosphere).every((l) => !l.isPlaying)).toBe(true);
   });
 
+  it("setLayer(on) starts once and setLayer(off) stops, idempotently (no double-trigger)", async () => {
+    const created: FakeAudio[] = [];
+    const { atmosphere, setLayer, setAudioFactory } = await import("./atmosphere");
+    setAudioFactory((src) => {
+      const a = new FakeAudio(src);
+      created.push(a);
+      return a as unknown as HTMLAudioElement;
+    });
+    const id = get(atmosphere)[0].id;
+
+    // turning on twice must start audio exactly once
+    setLayer(id, true);
+    setLayer(id, true);
+    expect(created.length).toBe(1);
+    expect(created[0].played).toBe(1);
+    expect(created[0].loop).toBe(true);
+    expect(get(atmosphere)[0].isPlaying).toBe(true);
+
+    // turning off twice must pause and stay off, no new element
+    setLayer(id, false);
+    setLayer(id, false);
+    expect(created.length).toBe(1);
+    expect(created[0].paused).toBe(true);
+    expect(get(atmosphere)[0].isPlaying).toBe(false);
+  });
+
   it("setLayerVolume updates the live element and the store", async () => {
     const created: FakeAudio[] = [];
     const { atmosphere, toggleLayer, setLayerVolume, setAudioFactory } = await import("./atmosphere");
