@@ -605,25 +605,35 @@
     }
   }
 
-  /* Portrait: let the controls flow in normal document order (below the
-     content column) instead of floating fixed over the track cards. */
+  /* Portrait (variant B): the character art is the hero in the middle and the
+     play-controls dock at the BOTTOM of the screen. The chord progression list
+     sits inside that same bottom dock (just under the play button), not
+     off-screen. The top content (tracklist/effects) stays at the top and no
+     longer collides with this dock. */
   @media (orientation: portrait) {
     .controls {
-      position: static;
-      bottom: auto;
-      left: auto;
-      transform: none;
-      margin: 0 auto;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 24px;
+      margin: 0;
       z-index: 30;
     }
 
+    /* Chords sit just ABOVE the bottom play dock (the .controls block is
+       ~70px play + ~50px New-music button = ~120px tall, plus the 24px gap),
+       so anchor the chord list at ~150px from the bottom. */
     .progressionList {
-      position: static;
-      left: auto;
-      bottom: auto;
-      transform: none;
-      width: 100%;
-      margin: 8px auto 0;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%) scale(0.85);
+      transform-origin: bottom center;
+      bottom: 158px;
+      top: auto;
+      width: auto;
+      max-width: 96vw;
+      margin: 0;
+      z-index: 30;
     }
   }
 </style>
