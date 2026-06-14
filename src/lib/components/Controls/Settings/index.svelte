@@ -6,6 +6,7 @@
   import AutoDJ from "./AutoDJ.svelte";
 
   import { t, locale, setLocale } from "../../../locales/store";
+  import { isTypingTarget } from "../../../utils/dom";
 
   let isActive = false;
 
@@ -14,21 +15,17 @@
     window.dispatchEvent(new CustomEvent("settings-open-changed", { detail: { isActive } }));
   }
 
-  // Shortuct to toggle settings with "J" key
-  window.addEventListener("keydown", (e) => {
+  // Shortcut to toggle settings with "J" key
+  function onKeydown(e: KeyboardEvent) {
+    if (isTypingTarget(e)) return;
     if (e.key === "j") {
       toggle();
     }
-  });
+  }
 
-  // when mounted toggle settings
-  // to excute settings of children (old saved)
-  onMount(() => {
-    toggle();
-    setTimeout(() => {
-      toggle();
-    }, 10);
-  });
+  // Children apply their saved settings via stores at load time, so we no
+  // longer force-open the panel on mount (which caused a visible flash).
+  // isActive stays false -> panel starts closed, no settings-open-changed at boot.
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -39,7 +36,15 @@
       isActive = false;
     }
   };
-  document.addEventListener("click", handleClickOutside);
+
+  onMount(() => {
+    window.addEventListener("keydown", onKeydown);
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", onKeydown);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  });
 
   const languages = [
     { code: "en", label: "English" },
