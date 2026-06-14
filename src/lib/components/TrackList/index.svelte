@@ -141,7 +141,7 @@
       width: 100%;
       max-width: min(92vw, 520px);
       margin: 0 auto;
-      height: clamp(180px, 40vh, 420px);
+      height: clamp(140px, 26vh, 240px);
     }
     #btn-view {
       width: 100%;

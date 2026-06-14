@@ -37,7 +37,7 @@
     .canvas-visualizer {
       left: 50%;
       transform: translateX(-50%);
-      bottom: 240px;
+      bottom: clamp(360px, 48vh, 520px);
       width: min(80vw, 320px);
     }
   }

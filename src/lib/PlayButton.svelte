@@ -527,4 +527,26 @@
       transform: scale(0.8);
     }
   }
+
+  /* Portrait: let the controls flow in normal document order (below the
+     content column) instead of floating fixed over the track cards. */
+  @media (orientation: portrait) {
+    .controls {
+      position: static;
+      bottom: auto;
+      left: auto;
+      transform: none;
+      margin: 0 auto;
+      z-index: 30;
+    }
+
+    .progressionList {
+      position: static;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      width: 100%;
+      margin: 8px auto 0;
+    }
+  }
 </style>

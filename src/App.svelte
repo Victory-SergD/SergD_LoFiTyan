@@ -134,12 +134,12 @@
 
     .content {
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: flex-start;
       align-items: stretch;
       gap: 16px;
       height: auto;
-      min-height: 100vh;
-      padding-bottom: 170px;
+      min-height: 0;
+      padding: 20px;
     }
   }
 
