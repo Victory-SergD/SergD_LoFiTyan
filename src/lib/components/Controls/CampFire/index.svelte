@@ -13,7 +13,10 @@
     currentVolume = v.effects.campfire ?? 1;
     fire.volume = currentVolume;
   });
-  onDestroy(() => unsub());
+  onDestroy(() => {
+    unsub();
+    fire.pause(); // don't let a looping effect outlive the component (audio-13)
+  });
 
   function toggleFire() {
     if (isFire) {
@@ -41,13 +44,24 @@
     }
   }
 
+  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // toggleFire(), so it can never accidentally start playing. (audio-7)
+  function handleStopAll() {
+    if (isFire) {
+      fire.pause();
+      isFire = false;
+    }
+  }
+
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-campfire", toggleFire);
+    window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-campfire", toggleFire);
+      window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });
 </script>

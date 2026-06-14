@@ -13,7 +13,10 @@
     currentVolume = v.effects.jungle ?? 1;
     jungle.volume = currentVolume;
   });
-  onDestroy(() => unsub());
+  onDestroy(() => {
+    unsub();
+    jungle.pause(); // don't let a looping effect outlive the component (audio-13)
+  });
 
   function toggleJungle() {
     if (isActive) {
@@ -41,13 +44,24 @@
     }
   }
 
+  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // toggleJungle(), so it can never accidentally start playing. (audio-7)
+  function handleStopAll() {
+    if (isActive) {
+      jungle.pause();
+      isActive = false;
+    }
+  }
+
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-jungle", toggleJungle);
+    window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-jungle", toggleJungle);
+      window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });
 </script>

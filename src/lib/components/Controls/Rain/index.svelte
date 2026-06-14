@@ -14,7 +14,10 @@
     currentVolume = v.effects.rain ?? 1;
     rain.volume = currentVolume;
   });
-  onDestroy(() => unsub());
+  onDestroy(() => {
+    unsub();
+    rain.pause(); // don't let a looping effect outlive the component (audio-13)
+  });
 
   function toggleRain() {
     if (isRaining) {
@@ -34,6 +37,15 @@
     }
   }
 
+  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // toggleRain(), so it can never accidentally start playing. (audio-7)
+  function handleStopAll() {
+    if (isRaining) {
+      rain.pause();
+      isRaining = false;
+    }
+  }
+
   onMount(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (isTypingTarget(e)) return;
@@ -41,9 +53,11 @@
     };
     window.addEventListener("keydown", handleKeydown);
     window.addEventListener("lofi-toggle-rain", toggleRain);
+    window.addEventListener("lofi-stop-all", handleStopAll);
     return () => {
       window.removeEventListener("keydown", handleKeydown);
       window.removeEventListener("lofi-toggle-rain", toggleRain);
+      window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });
 </script>

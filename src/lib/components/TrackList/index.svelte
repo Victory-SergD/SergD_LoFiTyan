@@ -47,6 +47,7 @@
       }
       if (e.key === "k") {
         stopAll();
+        window.dispatchEvent(new CustomEvent("lofi-stop-all"));
         return;
       }
       if (e.key === "ArrowUp") prevTrack();

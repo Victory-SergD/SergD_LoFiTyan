@@ -13,7 +13,10 @@
     currentVolume = v.effects.thunder ?? 1;
     storm.volume = currentVolume;
   });
-  onDestroy(() => unsub());
+  onDestroy(() => {
+    unsub();
+    storm.pause(); // don't let a looping effect outlive the component (audio-13)
+  });
 
   function toggleThunder() {
     if (isStorming) {
@@ -41,13 +44,24 @@
     }
   }
 
+  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // toggleThunder(), so it can never accidentally start playing. (audio-7)
+  function handleStopAll() {
+    if (isStorming) {
+      storm.pause();
+      isStorming = false;
+    }
+  }
+
   onMount(() => {
     window.addEventListener("keydown", onKeydown);
     window.addEventListener("lofi-toggle-thunder", toggleThunder);
+    window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", onKeydown);
       window.removeEventListener("lofi-toggle-thunder", toggleThunder);
+      window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });
 </script>

@@ -145,7 +145,6 @@
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
-        if (isStarting) return;
         handleButtonAction();
       }
     };
@@ -154,12 +153,30 @@
       handleButtonAction();
     };
 
+    // Global stop-all ('k'): stop the generative music ONLY if playing.
+    // Idempotent — never calls toggle()/handleButtonAction(), so it can't
+    // accidentally START audio. (audio-7)
+    const handleStopAll = () => {
+      if (Tone.Transport.state === "started") {
+        noise.stop();
+        Tone.Transport.stop();
+        isPlaying = false;
+        window.dispatchEvent(
+          new CustomEvent("lofi-play-state-changed", {
+            detail: { isPlaying: false },
+          })
+        );
+      }
+    };
+
     window.addEventListener("keydown", handleKeydown);
     window.addEventListener("lofi-toggle-play", handleCustomToggle);
+    window.addEventListener("lofi-stop-all", handleStopAll);
 
     return () => {
       window.removeEventListener("keydown", handleKeydown);
       window.removeEventListener("lofi-toggle-play", handleCustomToggle);
+      window.removeEventListener("lofi-stop-all", handleStopAll);
     };
   });
 
@@ -170,9 +187,22 @@
 
   onDestroy(() => {
     unsubVolume();
-    if (Tone.Transport.state === "started") {
+    // Unconditional teardown so nothing outlives the component on HMR/destroy. (audio-13)
+    try {
       noise.stop();
       Tone.Transport.stop();
+      chords?.stop();
+      melody?.stop();
+      kickLoop?.stop();
+      snareLoop?.stop();
+      hatLoop?.stop();
+      chords?.dispose();
+      melody?.dispose();
+      kickLoop?.dispose();
+      snareLoop?.dispose();
+      hatLoop?.dispose();
+    } catch (e) {
+      // no-op stops on an already-stopped transport/sequence may throw — ignore.
     }
   });
 
@@ -361,44 +391,48 @@
 
   async function startAudioContext() {
     await Tone.start();
-    contextStarted = true;
+    contextStarted = Tone.context.state === "running";
   }
 
   $: allSamplesLoaded = pianoLoaded && kickLoaded && snareLoaded && hatLoaded;
   $: activeProgressionIndex = (progress + 7) % 8;
-  // automically start audio context after samples are loaded
-  $: if (allSamplesLoaded && !contextStarted) {
-    startAudioContext();
+  // Prepare the first progression once samples are loaded.
+  // Do NOT call startAudioContext() here — Tone.start() (AudioContext resume)
+  // must only run inside a real user gesture (handleButtonAction). (audio-11)
+  $: if (allSamplesLoaded && !genChordsOnce) {
     generateProgression();
   }
 
   async function handleButtonAction() {
+    // Single race guard for ALL entry points (click, spacebar, lofi-toggle-play). (audio-8)
+    if (isStarting) return;
     if (!allSamplesLoaded) {
       return;
     } else if (!contextStarted) {
       isStarting = true;
-      await startAudioContext();
-      isStarting = false;
+      try {
+        await startAudioContext();
+      } finally {
+        isStarting = false;
+      }
     } else if (!genChordsOnce) {
       return;
     } else {
       isStarting = true;
-      await toggle();
-      isStarting = false;
+      try {
+        await toggle();
+      } finally {
+        isStarting = false;
+      }
     }
   }
 
-  // Explicit "new music": regenerate the progression and restart sequences if playing.
+  // Explicit "new music": change key/progression. The sequences keep running
+  // and pick up the new chords on the next bar. We intentionally do NOT call
+  // seq.start(0) — at an already-started Transport, time 0 is in the past so
+  // those calls are no-ops and could risk double-scheduling. (audio-14)
   function regenerate() {
     generateProgression();
-    if (Tone.Transport.state === "started") {
-      progress = 0;
-      chords.start(0);
-      melody.start(0);
-      kickLoop.start(0);
-      snareLoop.start(0);
-      hatLoop.start(0);
-    }
   }
 </script>
 
