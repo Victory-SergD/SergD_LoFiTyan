@@ -111,15 +111,33 @@ describe("loadStations (parse + filter)", () => {
       tags: "lofi",
     });
 
-    // loading is reset, no error, and the endpoint + User-Agent header are right.
+    // loading is reset, no error, and the request hit a radio-browser mirror.
     expect(get(loading)).toBe(false);
     expect(get(error)).toBeNull();
     const [url, opts] = fetchMock.mock.calls[0];
-    expect(url).toContain(
-      "https://all.api.radio-browser.info/json/stations/bytag/lofi"
-    );
+    expect(url).toContain(".api.radio-browser.info/json/stations/bytag/lofi");
     expect(url).toContain("hidebroken=true");
-    expect(opts.headers["User-Agent"]).toBe("LoFiTyan/1.0");
+    // No custom headers are sent (avoids any CORS preflight in the webview).
+    expect(opts).toBeUndefined();
+  });
+
+  it("falls back to the next mirror when one fails, then stops", async () => {
+    const good = [
+      apiStation({ stationuuid: "u1", name: "Mirror Two", url_resolved: "https://m2.example/s" }),
+    ];
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("mirror1 down"))
+      .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(good) });
+    vi.stubGlobal("fetch", fetchMock);
+    const { loadStations, stations, error } = await import("./radio");
+
+    await loadStations("lofi");
+
+    expect(get(stations).map((s) => s.id)).toEqual(["u1"]);
+    expect(get(error)).toBeNull();
+    // First mirror rejected, second succeeded -> stops there (no extra calls).
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("encodes the tag in the request URL", async () => {

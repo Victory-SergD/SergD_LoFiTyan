@@ -14,21 +14,27 @@
     togglePlay,
     playNext,
     playPrev,
+    loadStations,
   } from "../../stores/radio";
 </script>
 
 <div class="radio-player">
-  <p class="station-name" title={$current?.name ?? ""}>
-    {#if $error}
-      ⚠ {$error}
-    {:else if $loading}
-      <span class="dot-spin" aria-hidden="true"></span>
-    {:else if $buffering}
-      <span class="dot-spin" aria-hidden="true"></span> {$current?.name ?? ""}
-    {:else}
-      {$current?.name ?? "…"}
-    {/if}
-  </p>
+  {#if $error}
+    <!-- The fetch failed; let the user retry the load with a tap. -->
+    <button class="station-name retry" on:click={() => loadStations()} title="Повторить загрузку">
+      ⚠ {$error} · ↻
+    </button>
+  {:else}
+    <p class="station-name" title={$current?.name ?? ""}>
+      {#if $loading}
+        <span class="dot-spin" aria-hidden="true"></span>
+      {:else if $buffering}
+        <span class="dot-spin" aria-hidden="true"></span> {$current?.name ?? ""}
+      {:else}
+        {$current?.name ?? "…"}
+      {/if}
+    </p>
+  {/if}
   <div class="controls">
     <button class="nav-button glass" on:click={playPrev} aria-label="Previous station">
       <IconPlayerTrackPrevFilled size={20} />
@@ -76,6 +82,15 @@
     text-overflow: ellipsis;
     background: rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(10px);
+  }
+
+  button.station-name.retry {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button.station-name.retry:hover {
+    background: rgba(0, 0, 0, 0.45);
   }
 
   .controls {

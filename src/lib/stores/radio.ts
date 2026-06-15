@@ -40,34 +40,54 @@ interface ApiStation {
   tags: string;
 }
 
+// Community API mirrors, tried in order until one answers. `all.api` round-robins
+// the whole pool but can land on a dead/slow node; the named mirrors are stable
+// fallbacks. Trying several means a single bad mirror or a transient blip at
+// startup no longer leaves the app stuck on "Load failed". All hosts match the
+// CSP wildcard `https://*.api.radio-browser.info`.
+const API_MIRRORS = [
+  "https://de1.api.radio-browser.info",
+  "https://de2.api.radio-browser.info",
+  "https://nl1.api.radio-browser.info",
+  "https://at1.api.radio-browser.info",
+  "https://all.api.radio-browser.info",
+];
+
 /**
  * Fetch lofi stations for `tag`, filter to playable/safe https streams, dedupe
- * by lowercased name, and store at most MAX_STATIONS of them. On error the
- * existing `stations` are left untouched and the message is surfaced in `error`.
+ * by lowercased name, and store at most MAX_STATIONS of them. Tries each mirror
+ * in turn and stops at the first success. Only if EVERY mirror fails are the
+ * existing `stations` left untouched and the last error surfaced in `error`.
  */
 export async function loadStations(tag = "lofi"): Promise<void> {
   loading.set(true);
   error.set(null);
-  // `all.api.radio-browser.info` round-robins the community mirror pool, so we
-  // don't pin a single (possibly down) server. The CSP wildcard
-  // `https://*.api.radio-browser.info` covers whichever mirror it resolves to.
-  const endpoint =
-    `https://all.api.radio-browser.info/json/stations/bytag/${encodeURIComponent(tag)}` +
+  const path =
+    `/json/stations/bytag/${encodeURIComponent(tag)}` +
     `?hidebroken=true&order=clickcount&reverse=true&limit=80`;
-  try {
-    const res = await fetch(endpoint, {
-      headers: { "User-Agent": "LoFiTyan/1.0" },
-    });
-    if (!res.ok) {
-      throw new Error(`radio-browser responded ${res.status}`);
+  let lastError: unknown = new Error("no radio mirror reachable");
+  for (const base of API_MIRRORS) {
+    try {
+      // Plain GET, no custom headers: this stays a "simple" CORS request (the API
+      // sends `Access-Control-Allow-Origin: *`), so the system webview never has
+      // to deal with a preflight. A `User-Agent` header would be dropped by the
+      // webview anyway, so it bought us nothing and only added risk.
+      const res = await fetch(base + path);
+      if (!res.ok) {
+        lastError = new Error(`radio-browser responded ${res.status}`);
+        continue;
+      }
+      const raw = (await res.json()) as ApiStation[];
+      stations.set(parseStations(raw));
+      loading.set(false);
+      return;
+    } catch (e) {
+      lastError = e;
+      continue; // try the next mirror
     }
-    const raw = (await res.json()) as ApiStation[];
-    stations.set(parseStations(raw));
-  } catch (e) {
-    error.set(e instanceof Error ? e.message : String(e));
-  } finally {
-    loading.set(false);
   }
+  error.set(lastError instanceof Error ? lastError.message : String(lastError));
+  loading.set(false);
 }
 
 /**
