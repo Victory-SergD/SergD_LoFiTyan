@@ -42,6 +42,10 @@
     if (e.key === "k") {
       window.dispatchEvent(new CustomEvent("lofi-stop-all"));
     }
+    if (e.code === "Space") {
+      e.preventDefault();
+      togglePlay();
+    }
   }
 
   // ContextMenu dispatches `lofi-toggle-play`; route it to the radio. The radio

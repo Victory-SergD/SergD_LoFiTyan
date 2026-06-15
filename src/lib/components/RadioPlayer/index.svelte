@@ -8,6 +8,9 @@
   import {
     current,
     isPlaying,
+    loading,
+    error,
+    buffering,
     togglePlay,
     playNext,
     playPrev,
@@ -16,7 +19,15 @@
 
 <div class="radio-player">
   <p class="station-name" title={$current?.name ?? ""}>
-    {$current?.name ?? "…"}
+    {#if $error}
+      ⚠ {$error}
+    {:else if $loading}
+      <span class="dot-spin" aria-hidden="true"></span>
+    {:else if $buffering}
+      <span class="dot-spin" aria-hidden="true"></span> {$current?.name ?? ""}
+    {:else}
+      {$current?.name ?? "…"}
+    {/if}
   </p>
   <div class="controls">
     <button class="nav-button glass" on:click={playPrev} aria-label="Previous station">
@@ -108,5 +119,20 @@
     .radio-player {
       bottom: 24px;
     }
+  }
+
+  .dot-spin {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 4px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: dot-spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes dot-spin {
+    to { transform: rotate(360deg); }
   }
 </style>

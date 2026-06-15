@@ -23,6 +23,7 @@ export const current = writable<RadioStation | null>(null);
 export const isPlaying = writable<boolean>(false);
 export const loading = writable<boolean>(false);
 export const error = writable<string | null>(null);
+export const buffering = writable<boolean>(false);
 
 // Keep at most this many stations after filtering.
 const MAX_STATIONS = 40;
@@ -132,6 +133,9 @@ function ensureAudio(): HTMLAudioElement {
       error.set("Stream failed to play");
       isPlaying.set(false);
     });
+    audio.addEventListener("waiting", () => buffering.set(true));
+    audio.addEventListener("playing", () => buffering.set(false));
+    audio.addEventListener("canplay", () => buffering.set(false));
   }
   return audio;
 }
@@ -145,6 +149,7 @@ export async function play(station: RadioStation): Promise<void> {
   const el = ensureAudio();
   current.set(station);
   error.set(null);
+  buffering.set(true);
   el.src = station.url;
   el.volume = masterVolume;
   try {
@@ -152,6 +157,7 @@ export async function play(station: RadioStation): Promise<void> {
     isPlaying.set(true);
   } catch (e) {
     isPlaying.set(false);
+    buffering.set(false);
     error.set(e instanceof Error ? e.message : String(e));
   }
 }
@@ -162,6 +168,7 @@ export function pause(): void {
     audio.pause();
   }
   isPlaying.set(false);
+  buffering.set(false);
 }
 
 /**

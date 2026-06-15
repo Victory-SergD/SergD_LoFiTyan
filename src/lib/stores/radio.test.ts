@@ -260,4 +260,32 @@ describe("playback transitions (FakeAudio)", () => {
     expect(get(mod.isPlaying)).toBe(false);
     expect(get(mod.error)).toBe("Stream failed to play");
   });
+
+  it("buffering reflects waiting/playing/canplay audio events", async () => {
+    const { mod, created } = await setup();
+    const list = get(mod.stations);
+    await mod.play(list[0]);
+    const el = created[0];
+
+    el.listeners["waiting"]?.forEach((fn) => fn());
+    expect(get(mod.buffering)).toBe(true);
+
+    el.listeners["playing"]?.forEach((fn) => fn());
+    expect(get(mod.buffering)).toBe(false);
+
+    el.listeners["waiting"]?.forEach((fn) => fn());
+    expect(get(mod.buffering)).toBe(true);
+    el.listeners["canplay"]?.forEach((fn) => fn());
+    expect(get(mod.buffering)).toBe(false);
+  });
+
+  it("starting playback on a new station sets buffering true until it plays", async () => {
+    const { mod, created } = await setup();
+    const list = get(mod.stations);
+    await mod.play(list[0]);
+    // play() optimistically marks buffering until 'playing'/'canplay'
+    expect(get(mod.buffering)).toBe(true);
+    created[0].listeners["playing"]?.forEach((fn) => fn());
+    expect(get(mod.buffering)).toBe(false);
+  });
 });
