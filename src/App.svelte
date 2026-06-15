@@ -195,5 +195,14 @@
   .container.immersive .chrome {
     opacity: 0;
     pointer-events: none;
+    /* Hiding fades out over 0.4s (rule above). */
+    transition: opacity 0.4s ease;
+  }
+
+  /* Reveal is INSTANT: when leaving immersive mode the chrome snaps back to
+     fully opaque and clickable, so a click right after the pointer wakes it
+     lands on a real, opaque button (no swallowed first click). */
+  .container:not(.immersive) .chrome {
+    transition: none;
   }
 </style>

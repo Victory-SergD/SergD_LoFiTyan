@@ -176,6 +176,7 @@ export function initIdleWatch(): () => void {
     "keydown",
     "touchstart",
     "pointerdown",
+    "pointermove",
   ] as const;
 
   for (const evt of activityEvents) {
