@@ -1,17 +1,11 @@
 <script lang="ts">
-  import {
-    IconArrowDown,
-    IconArrowLeft,
-    IconArrowRight,
-    IconArrowUp,
-  } from "@tabler/icons-svelte";
+  import { IconArrowLeft, IconArrowRight } from "@tabler/icons-svelte";
   import { t } from "../../locales/store";
-  let ambientTracks = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 </script>
 
 <div class="shortcuts">
   <h4>{$t.info.shortcuts.title}</h4>
-  <!-- General Shortcuts -->
+
   <h5 style="margin-left: 10px;">{$t.info.shortcuts.general.title}</h5>
   <div class="shortcut">
     <div class="shortcut-key">Esc</div>
@@ -22,6 +16,10 @@
     <div class="shortcut-desc">{$t.info.shortcuts.general.j}</div>
   </div>
   <div class="shortcut">
+    <div class="shortcut-key">Ctrl/⌘ + I</div>
+    <div class="shortcut-desc">{$t.info.shortcuts.general.immersive}</div>
+  </div>
+  <div class="shortcut">
     <div class="shortcut-key"><IconArrowRight size={15} /></div>
     <div class="shortcut-desc">{$t.info.shortcuts.general.next_bg}</div>
   </div>
@@ -30,16 +28,20 @@
     <div class="shortcut-desc">{$t.info.shortcuts.general.prev_bg}</div>
   </div>
   <div class="shortcut">
-    <div class="shortcut-key">CTRL + R</div>
+    <div class="shortcut-key">Ctrl + R</div>
     <div class="shortcut-desc">{$t.info.shortcuts.general.restart}</div>
   </div>
 
-  <h5 style="margin-left: 10px;">{$t.info.shortcuts.main_track.title}</h5>
+  <h5 style="margin-left: 10px;">{$t.info.shortcuts.radio.title}</h5>
   <div class="shortcut">
-    <div class="shortcut-key">SPACEBAR</div>
-    <div class="shortcut-desc">{$t.info.shortcuts.main_track.play_pause}</div>
+    <div class="shortcut-key">Space</div>
+    <div class="shortcut-desc">{$t.info.shortcuts.radio.play_pause}</div>
   </div>
-  <!-- Effects Shortcuts -->
+  <div class="shortcut">
+    <div class="shortcut-key">K</div>
+    <div class="shortcut-desc">{$t.info.shortcuts.radio.stop_all}</div>
+  </div>
+
   <h5 style="margin-left: 10px;">{$t.info.shortcuts.effects.title}</h5>
   <div class="shortcut">
     <div class="shortcut-key">A</div>
@@ -57,28 +59,6 @@
     <div class="shortcut-key">F</div>
     <div class="shortcut-desc">{$t.info.shortcuts.effects.campfire}</div>
   </div>
-  <!-- Ambient Tracks Shortcuts -->
-  <h5 style="margin-left: 10px;">{$t.info.shortcuts.ambient.title}</h5>
-  <div class="shortcut">
-    <div class="shortcut-key"><IconArrowUp size={15} /></div>
-    <div class="shortcut-desc">{$t.info.shortcuts.ambient.next}</div>
-  </div>
-  <div class="shortcut">
-    <div class="shortcut-key"><IconArrowDown size={15} /></div>
-    <div class="shortcut-desc">{$t.info.shortcuts.ambient.prev}</div>
-  </div>
-  <div class="shortcut">
-    <div class="shortcut-key">K</div>
-    <div class="shortcut-desc">{$t.info.shortcuts.ambient.stop_all}</div>
-  </div>
-  {#each ambientTracks as track}
-    <div class="shortcut">
-      <div class="shortcut-key">{track}</div>
-      <div class="shortcut-desc">
-        {$t.info.shortcuts.ambient.play_pause_specific} {track}
-      </div>
-    </div>
-  {/each}
 </div>
 
 <style>
@@ -98,7 +78,6 @@
     font-size: small;
     margin-left: 20px;
   }
-
   .shortcut-key {
     min-width: 30px;
     background-color: #fff;
@@ -107,7 +86,6 @@
     border-radius: 10px;
     text-align: center;
   }
-
   .shortcut-desc {
     color: #fff;
   }
