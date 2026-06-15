@@ -259,6 +259,7 @@ describe("playback transitions (FakeAudio)", () => {
     created[0].listeners["error"]?.forEach((fn) => fn());
     expect(get(mod.isPlaying)).toBe(false);
     expect(get(mod.error)).toBe("Stream failed to play");
+    expect(get(mod.buffering)).toBe(false);
   });
 
   it("buffering reflects waiting/playing/canplay audio events", async () => {

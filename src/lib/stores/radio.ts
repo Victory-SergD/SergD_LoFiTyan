@@ -132,6 +132,7 @@ function ensureAudio(): HTMLAudioElement {
       // and stop, without auto-advancing.
       error.set("Stream failed to play");
       isPlaying.set(false);
+      buffering.set(false);
     });
     audio.addEventListener("waiting", () => buffering.set(true));
     audio.addEventListener("playing", () => buffering.set(false));
