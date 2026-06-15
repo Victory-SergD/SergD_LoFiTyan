@@ -1,5 +1,6 @@
 <script lang="ts">
   import CampFire from "./CampFire/index.svelte";
+  import FullScreen from "./FullScreen/index.svelte";
   import Jungle from "./Jungle/index.svelte";
   import Rain from "./Rain/index.svelte";
   import Settings from "./Settings/index.svelte";
@@ -13,12 +14,13 @@
   <Thunder />
   <Jungle />
   <CampFire />
+  <FullScreen />
   <Settings />
 </div>
 
 <style>
   .controls {
-    width: 340px;
+    width: 384px;
     height: 50px;
     color: white;
     display: flex;

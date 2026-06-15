@@ -10,6 +10,7 @@
   } from "./lib/stores/immersion";
   import RadioPlayer from "./lib/components/RadioPlayer/index.svelte";
   import { loadStations, togglePlay, pause } from "./lib/stores/radio";
+  import { fullscreen, exitFullscreen } from "./lib/stores/fullscreen";
   import Canvas from "./lib/components/Canvas/index.svelte";
   import Controls from "./lib/components/Controls/index.svelte";
   import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
@@ -45,6 +46,10 @@
     if (e.code === "Space") {
       e.preventDefault();
       togglePlay();
+    }
+    if (e.key === "Escape") {
+      // Esc leaves fullscreen (no-op when windowed); Info closes via its own listener.
+      void exitFullscreen();
     }
   }
 
@@ -122,7 +127,7 @@
   }
 </script>
 
-<main class="container" class:immersive={$immersive}>
+<main class="container" class:immersive={$immersive} class:fullscreen={$fullscreen}>
   <Canvas />
   <!-- Weather ambiance: rendered OUTSIDE `.chrome` so it stays visible when the
        controls auto-hide in immersive mode, like the character (BUG C). -->
@@ -204,5 +209,13 @@
      lands on a real, opaque button (no swallowed first click). */
   .container:not(.immersive) .chrome {
     transition: none;
+  }
+
+  /* In real fullscreen the custom titlebar would leave a strip across the top,
+     so hide it — the scene goes truly edge-to-edge. The controls dock (in
+     `.chrome`) still reappears on pointer move, so the exit-fullscreen button
+     and Esc remain reachable. */
+  .container.fullscreen :global(.titlebar) {
+    display: none;
   }
 </style>
