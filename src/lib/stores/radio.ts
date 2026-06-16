@@ -57,9 +57,12 @@ export const SEED: Record<Genre, RadioStation[]> = {
 export const stations = writable<RadioStation[]>([]);
 export const current = writable<RadioStation | null>(null);
 export const isPlaying = writable<boolean>(false);
-export const loading = writable<boolean>(false);
 export const error = writable<string | null>(null);
 export const buffering = writable<boolean>(false);
+// Station-list fetch state (radio-browser "More" tab). Separate from playback
+// state so a slow/failed list fetch never clobbers the now-playing label.
+export const listLoading = writable<boolean>(false);
+export const listError = writable<string | null>(null);
 
 // ---- favorites (persisted) ----
 const FAV_KEY = "lofityan.favorites";
@@ -120,8 +123,8 @@ const API_MIRRORS = [
  * existing `stations` left untouched and the last error surfaced in `error`.
  */
 export async function loadStations(tag = "lofi", bitrateMin = 0): Promise<void> {
-  loading.set(true);
-  error.set(null);
+  listLoading.set(true);
+  listError.set(null);
   const path =
     `/json/stations/bytag/${encodeURIComponent(tag)}` +
     `?hidebroken=true&order=clickcount&reverse=true&limit=80` +
@@ -140,15 +143,15 @@ export async function loadStations(tag = "lofi", bitrateMin = 0): Promise<void> 
       }
       const raw = (await res.json()) as ApiStation[];
       stations.set(parseStations(raw));
-      loading.set(false);
+      listLoading.set(false);
       return;
     } catch (e) {
       lastError = e;
       continue; // try the next mirror
     }
   }
-  error.set(lastError instanceof Error ? lastError.message : String(lastError));
-  loading.set(false);
+  listError.set(lastError instanceof Error ? lastError.message : String(lastError));
+  listLoading.set(false);
 }
 
 /**

@@ -92,7 +92,7 @@ describe("loadStations (parse + filter)", () => {
       apiStation({ stationuuid: "u5", name: "Empty", url_resolved: "" }),
     ];
     const fetchMock = mockFetchOk(payload);
-    const { loadStations, stations, loading, error } = await import("./radio");
+    const { loadStations, stations, listLoading, listError } = await import("./radio");
 
     await loadStations("lofi");
 
@@ -111,9 +111,9 @@ describe("loadStations (parse + filter)", () => {
       tags: "lofi",
     });
 
-    // loading is reset, no error, and the request hit a radio-browser mirror.
-    expect(get(loading)).toBe(false);
-    expect(get(error)).toBeNull();
+    // listLoading is reset, no listError, and the request hit a radio-browser mirror.
+    expect(get(listLoading)).toBe(false);
+    expect(get(listError)).toBeNull();
     const [url, opts] = fetchMock.mock.calls[0];
     expect(url).toContain(".api.radio-browser.info/json/stations/bytag/lofi");
     expect(url).toContain("hidebroken=true");
@@ -152,16 +152,16 @@ describe("loadStations (parse + filter)", () => {
     mockFetchOk([
       apiStation({ stationuuid: "u1", name: "Keep Me", url_resolved: "https://k.example/s" }),
     ]);
-    const { loadStations, stations, error, loading } = await import("./radio");
+    const { loadStations, stations, listError, listLoading } = await import("./radio");
     await loadStations("lofi");
     expect(get(stations)).toHaveLength(1);
 
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
     await loadStations("lofi");
 
-    expect(get(error)).toBe("network down");
+    expect(get(listError)).toBe("network down");
     expect(get(stations)).toHaveLength(1); // unchanged
-    expect(get(loading)).toBe(false);
+    expect(get(listLoading)).toBe(false);
   });
 });
 

@@ -9,21 +9,20 @@
   import {
     current,
     isPlaying,
-    loading,
     error,
     buffering,
     togglePlay,
     playNext,
     playPrev,
-    loadStations,
+    selectStation,
   } from "../../stores/radio";
   import { openPicker } from "../../stores/picker";
 </script>
 
 <div class="radio-player">
   {#if $error}
-    <!-- The fetch failed; let the user retry the load with a tap. -->
-    <button class="station-name retry" on:click={() => loadStations()} title="Повторить загрузку">
+    <!-- Playback error; let the user retry by re-selecting the current station. -->
+    <button class="station-name retry" on:click={() => { if ($current) selectStation($current); }} title="Повторить">
       ⚠ {$error} · ↻
     </button>
   {:else}
@@ -31,9 +30,7 @@
       {#if $current?.favicon && $current.favicon.startsWith("https")}
         <img class="np-fav" src={$current.favicon} alt="" />
       {/if}
-      {#if $loading}
-        <span class="dot-spin" aria-hidden="true"></span>
-      {:else if $buffering}
+      {#if $buffering}
         <span class="dot-spin" aria-hidden="true"></span> {$current?.name ?? ""}
       {:else}
         {$current?.name ?? "…"}

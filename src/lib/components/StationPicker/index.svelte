@@ -13,8 +13,8 @@
     stations,
     current,
     favorites,
-    loading,
-    error,
+    listLoading,
+    listError,
     selectStation,
     toggleFavorite,
     loadStations,
@@ -69,9 +69,9 @@
     {/if}
 
     <div class="list">
-      {#if tab === "More" && $loading}
+      {#if tab === "More" && $listLoading}
         <p class="hint">{$t.picker.loading}</p>
-      {:else if tab === "More" && $error}
+      {:else if tab === "More" && $listError}
         <button class="hint retry" on:click={() => loadStations(GENRE_TAG[moreGenre], 128)}>⚠ {$t.picker.retry}</button>
       {:else if tab === "★" && rows.length === 0}
         <p class="hint">{$t.picker.empty_favorites}</p>
