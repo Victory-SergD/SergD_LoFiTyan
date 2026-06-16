@@ -260,8 +260,29 @@ export async function play(station: RadioStation): Promise<void> {
 
 const LAST_KEY = "lofityan.last-station";
 
-/** Play a station and remember it as the last-played for next launch. */
-export function selectStation(s: RadioStation): void {
+/**
+ * The list the current station belongs to, so ◀ ▶ step through it — a genre's
+ * seed, the favorites, or the radio-browser "More" results, whichever the
+ * station was picked from.
+ */
+export const queue = writable<RadioStation[]>([]);
+
+// Find the seed-genre list that contains `s` (so restored/last stations get a
+// sensible ◀ ▶ queue), or null if it's not a seed station.
+function seedGenreOf(s: RadioStation): RadioStation[] | null {
+  for (const g of GENRES) {
+    if (SEED[g].some((x) => x.id === s.id)) return SEED[g];
+  }
+  return null;
+}
+
+/**
+ * Play a station and remember it as the last-played for next launch. Pass the
+ * `list` it was picked from to drive ◀ ▶ navigation; omit it to keep the
+ * current queue (used by playNext/playPrev themselves).
+ */
+export function selectStation(s: RadioStation, list?: RadioStation[]): void {
+  if (list && list.length) queue.set(list);
   // Already playing this exact station -> no-op, so re-tapping it in the picker
   // doesn't needlessly restart the stream (which would also trigger an AbortError).
   if (get(current)?.id === s.id && get(isPlaying)) return;
@@ -279,7 +300,12 @@ export function initRadio(): void {
     const raw = localStorage.getItem(LAST_KEY);
     if (!raw) return;
     const s = JSON.parse(raw) as RadioStation;
-    if (s && typeof s.url === "string") current.set(s);
+    if (s && typeof s.url === "string") {
+      current.set(s);
+      // Seed the ◀ ▶ queue with the genre the restored station belongs to, so
+      // the arrows work immediately on launch without opening the picker.
+      queue.set(seedGenreOf(s) ?? [s]);
+    }
   } catch {
     /* ignore */
   }
@@ -310,35 +336,33 @@ export function togglePlay(): void {
   }
   const list = get(stations);
   if (list.length > 0) {
-    void play(list[0]);
+    selectStation(list[0], list);
     return;
   }
-  selectStation(SEED["Lo-Fi"][0]);
+  selectStation(SEED["Lo-Fi"][0], SEED["Lo-Fi"]);
 }
 
-// Resolve the index of `current` within `stations`, or -1 if absent.
+// Resolve the index of `current` within `list`, or -1 if absent.
 function currentIndex(list: RadioStation[]): number {
   const cur = get(current);
   if (!cur) return -1;
   return list.findIndex((s) => s.id === cur.id);
 }
 
-/** Advance to the next station, wrapping around. No-op with no stations. */
+/** Advance to the next station within the active queue, wrapping around. */
 export function playNext(): void {
-  const list = get(stations);
+  const list = get(queue);
   if (list.length === 0) return;
   const idx = currentIndex(list);
-  const next = list[(idx + 1) % list.length];
-  void play(next);
+  selectStation(list[(idx + 1) % list.length]); // no list arg -> keeps the queue
 }
 
-/** Step to the previous station, wrapping around. No-op with no stations. */
+/** Step to the previous station within the active queue, wrapping around. */
 export function playPrev(): void {
-  const list = get(stations);
+  const list = get(queue);
   if (list.length === 0) return;
   const idx = currentIndex(list);
   // From "no current" (-1) prev should land on the last station.
   const base = idx < 0 ? 0 : idx;
-  const prev = list[(base - 1 + list.length) % list.length];
-  void play(prev);
+  selectStation(list[(base - 1 + list.length) % list.length]); // keeps the queue
 }

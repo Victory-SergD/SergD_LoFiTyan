@@ -244,7 +244,8 @@ describe("playback transitions (FakeAudio)", () => {
   it("playNext() advances and wraps around the end", async () => {
     const { mod } = await setup();
     const list = get(mod.stations);
-    await mod.play(list[0]); // One
+    mod.selectStation(list[0], list); // One — also sets the ◀ ▶ queue
+    await Promise.resolve();
     mod.playNext();
     await Promise.resolve();
     expect(get(mod.current)?.id).toBe("u2"); // Two
@@ -259,13 +260,37 @@ describe("playback transitions (FakeAudio)", () => {
   it("playPrev() steps back and wraps around the start", async () => {
     const { mod } = await setup();
     const list = get(mod.stations);
-    await mod.play(list[0]); // One
+    mod.selectStation(list[0], list); // One — also sets the ◀ ▶ queue
+    await Promise.resolve();
     mod.playPrev();
     await Promise.resolve();
     expect(get(mod.current)?.id).toBe("u3"); // wrapped to Three
     mod.playPrev();
     await Promise.resolve();
     expect(get(mod.current)?.id).toBe("u2"); // Two
+  });
+
+  it("◀ ▶ navigate the list the station was selected from (queue)", async () => {
+    const { mod } = await setup();
+    const lofi = mod.SEED["Lo-Fi"];
+    mod.selectStation(lofi[0], lofi); // queue := the Lo-Fi seed
+    await Promise.resolve();
+    expect(get(mod.current)?.id).toBe(lofi[0].id);
+    mod.playNext();
+    await Promise.resolve();
+    expect(get(mod.current)?.id).toBe(lofi[1].id);
+    mod.playPrev();
+    await Promise.resolve();
+    expect(get(mod.current)?.id).toBe(lofi[0].id);
+  });
+
+  it("initRadio restores the ◀ ▶ queue to the station's seed genre", async () => {
+    const mod = await import("./radio");
+    const lofi = mod.SEED["Lo-Fi"];
+    localStorage.setItem("lofityan.last-station", JSON.stringify(lofi[2]));
+    mod.initRadio();
+    expect(get(mod.current)?.id).toBe(lofi[2].id);
+    expect(get(mod.queue).map((s) => s.id)).toEqual(lofi.map((s) => s.id));
   });
 
   it("an audio error event sets error and clears isPlaying", async () => {

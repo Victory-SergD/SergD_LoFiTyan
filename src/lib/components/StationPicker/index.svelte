@@ -80,7 +80,7 @@
       {:else}
         {#each rows as s (s.id)}
           <div class="row" class:playing={$current?.id === s.id}>
-            <button class="row-main" on:click={() => { selectStation(s); closePicker(); }}>
+            <button class="row-main" on:click={() => { selectStation(s, rows); closePicker(); }}>
               {#if s.favicon && s.favicon.startsWith("https")}
                 <img class="fav-img" src={s.favicon} alt="" />
               {:else}
