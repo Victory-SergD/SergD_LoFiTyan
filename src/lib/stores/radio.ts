@@ -123,6 +123,7 @@ const API_MIRRORS = [
  * existing `stations` left untouched and the last error surfaced in `error`.
  */
 export async function loadStations(tag = "lofi", bitrateMin = 0): Promise<void> {
+  const seq = ++loadSeq;
   listLoading.set(true);
   listError.set(null);
   const path =
@@ -142,6 +143,7 @@ export async function loadStations(tag = "lofi", bitrateMin = 0): Promise<void> 
         continue;
       }
       const raw = (await res.json()) as ApiStation[];
+      if (seq !== loadSeq) return; // superseded by a newer load
       stations.set(parseStations(raw));
       listLoading.set(false);
       return;
@@ -150,6 +152,7 @@ export async function loadStations(tag = "lofi", bitrateMin = 0): Promise<void> 
       continue; // try the next mirror
     }
   }
+  if (seq !== loadSeq) return;
   listError.set(lastError instanceof Error ? lastError.message : String(lastError));
   listLoading.set(false);
 }
@@ -187,6 +190,7 @@ export function parseStations(raw: ApiStation[]): RadioStation[] {
 // ---- audio side-effect (injectable for tests) ----
 type AudioFactory = (url: string) => HTMLAudioElement;
 let audioFactory: AudioFactory = (url) => new Audio(url);
+let loadSeq = 0;
 export function setAudioFactory(fn: AudioFactory): void {
   audioFactory = fn;
 }
@@ -283,9 +287,9 @@ function seedGenreOf(s: RadioStation): RadioStation[] | null {
  */
 export function selectStation(s: RadioStation, list?: RadioStation[]): void {
   if (list && list.length) queue.set(list);
-  // Already playing this exact station -> no-op, so re-tapping it in the picker
-  // doesn't needlessly restart the stream (which would also trigger an AbortError).
-  if (get(current)?.id === s.id && get(isPlaying)) return;
+  // Re-selecting the current station intentionally restarts playback — this is
+  // the primary recovery path for a stalled stream. play() already swallows the
+  // resulting AbortError so there is no bogus error flash.
   try {
     localStorage.setItem(LAST_KEY, JSON.stringify(s));
   } catch {
@@ -300,7 +304,7 @@ export function initRadio(): void {
     const raw = localStorage.getItem(LAST_KEY);
     if (!raw) return;
     const s = JSON.parse(raw) as RadioStation;
-    if (s && typeof s.url === "string") {
+    if (s && typeof s.url === "string" && s.url.startsWith("https://")) {
       current.set(s);
       // Seed the ◀ ▶ queue with the genre the restored station belongs to, so
       // the arrows work immediately on launch without opening the picker.

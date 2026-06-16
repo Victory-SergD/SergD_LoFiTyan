@@ -163,6 +163,51 @@ describe("loadStations (parse + filter)", () => {
     expect(get(stations)).toHaveLength(1); // unchanged
     expect(get(listLoading)).toBe(false);
   });
+
+  it("a superseded loadStations does not overwrite a newer result", async () => {
+    const stationA = apiStation({ stationuuid: "a1", name: "Station A", url_resolved: "https://a.example/s" });
+    const stationB = apiStation({ stationuuid: "b1", name: "Station B", url_resolved: "https://b.example/s" });
+
+    // Manually-resolved promise for the slow first call.
+    let resolveSlowFetch!: (value: unknown) => void;
+    const slowPromise = new Promise((res) => { resolveSlowFetch = res; });
+
+    let callCount = 0;
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        // First call: resolves late with station A.
+        return slowPromise.then(() => ({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([stationA]),
+        }));
+      }
+      // Subsequent calls resolve immediately with station B.
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve([stationB]),
+      });
+    }));
+
+    const { loadStations, stations } = await import("./radio");
+
+    // Fire slow call (don't await).
+    const slow = loadStations("lofi");
+    // Fire fast call and await it — this wins and sets seq ahead.
+    await loadStations("chillhop");
+
+    // At this point stations should contain B.
+    expect(get(stations).map((s) => s.id)).toEqual(["b1"]);
+
+    // Now resolve the slow first fetch and await it.
+    resolveSlowFetch(undefined);
+    await slow;
+
+    // The superseded result (A) must NOT have overwritten B.
+    expect(get(stations).map((s) => s.id)).toEqual(["b1"]);
+  });
 });
 
 describe("playback transitions (FakeAudio)", () => {
@@ -356,16 +401,16 @@ describe("playback transitions (FakeAudio)", () => {
     expect(get(mod.error)).toBeNull();
   });
 
-  it("selectStation is a no-op when the same station is already playing", async () => {
+  it("selectStation restarts when re-selecting the currently playing station", async () => {
     const { mod, created } = await setup();
     const list = get(mod.stations);
     mod.selectStation(list[0]);
     await Promise.resolve();
     expect(get(mod.isPlaying)).toBe(true);
     const playsBefore = created[0].played;
-    mod.selectStation(list[0]); // same station, already playing -> no restart
+    mod.selectStation(list[0]); // same station, already playing -> restarts
     await Promise.resolve();
-    expect(created[0].played).toBe(playsBefore);
+    expect(created[0].played).toBe(playsBefore + 1);
   });
 });
 
@@ -465,5 +510,24 @@ describe("station picker store", () => {
     const { loadStations } = await import("./radio");
     await loadStations("lofi", 192);
     expect(fetchMock.mock.calls[0][0]).toContain("&bitrateMin=192");
+  });
+
+  it("initRadio ignores a stored non-HTTPS station", async () => {
+    localStorage.clear();
+    const httpStation = {
+      id: "insecure",
+      name: "Insecure",
+      url: "http://x/s",
+      favicon: "",
+      codec: "MP3",
+      bitrate: 128,
+      tags: "",
+    };
+    localStorage.setItem("lofityan.last-station", JSON.stringify(httpStation));
+
+    const mod = await import("./radio");
+    mod.initRadio();
+
+    expect(get(mod.current)).toBeNull();
   });
 });
