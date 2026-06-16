@@ -265,6 +265,7 @@
         if (customBg.kind === "video") {
           setVideoBg(customBg.path, customBg.focalX, customBg.focalY);
         } else {
+          clearVideoBg();
           bg.style.backgroundImage = `url('${customBg.dataUrl}')`;
         }
         return;
@@ -274,6 +275,7 @@
         localStorage.removeItem("custom-bg-id");
       }
     }
+    clearVideoBg();
     bg.style.backgroundImage = `url('assets/background/bg${id}.webp')`;
   }
 
