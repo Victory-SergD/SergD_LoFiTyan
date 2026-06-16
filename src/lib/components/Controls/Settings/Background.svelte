@@ -5,9 +5,10 @@
     IconPlus,
     IconTrash,
   } from "@tabler/icons-svelte";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import localDB from "../../../localDB";
   import { t } from "../../../locales/store";
+  import { isTypingTarget } from "../../../utils/dom";
 
   const MAX_DIMENSION = 1920;
   const WEBP_QUALITY  = 0.85;
@@ -27,6 +28,15 @@
     await loadCustomBackgrounds();
     buildAllBackgrounds();
     applyCurrentBackground();
+    window.addEventListener("customBackgroundSelected", onCustomBgSelected as EventListener);
+    window.addEventListener("backgroundsUpdated", onBackgroundsUpdated);
+    window.addEventListener("keydown", onBgKeydown);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener("customBackgroundSelected", onCustomBgSelected as EventListener);
+    window.removeEventListener("backgroundsUpdated", onBackgroundsUpdated);
+    window.removeEventListener("keydown", onBgKeydown);
   });
 
   /**
@@ -243,27 +253,26 @@
     }
   }
 
-  window.addEventListener("customBackgroundSelected", (event: CustomEvent) => {
+  const onCustomBgSelected = (event: CustomEvent) => {
     bgType = "custom";
     customBgId = event.detail.id;
     localStorage.setItem("bg-type", "custom");
     localStorage.setItem("custom-bg-id", customBgId);
-  });
+  };
 
-  window.addEventListener("backgroundsUpdated", () => {
+  const onBackgroundsUpdated = () => {
     loadCustomBackgrounds();
     buildAllBackgrounds();
-  });
+  };
 
-  window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.target instanceof HTMLElement && !e.target.closest("input")) {
-      if (e.key === "ArrowRight") {
-        nextBg();
-      } else if (e.key === "ArrowLeft") {
-        prevBg();
-      }
+  const onBgKeydown = (e: KeyboardEvent) => {
+    if (isTypingTarget(e)) return;
+    if (e.key === "ArrowRight") {
+      nextBg();
+    } else if (e.key === "ArrowLeft") {
+      prevBg();
     }
-  });
+  };
 </script>
 
 <div>

@@ -11,11 +11,11 @@
     IconInfoCircle,
   } from "@tabler/icons-svelte";
   import { t } from "../../locales/store";
+  import { isPlaying } from "../../stores/radio";
 
   let visible = false;
   let x = 0;
   let y = 0;
-  let isPlaying = false;
 
   function handleContextMenu(e: MouseEvent) {
     e.preventDefault();
@@ -63,28 +63,16 @@
     visible = false;
   }
 
-  function handlePlayStateChange(e: CustomEvent) {
-    isPlaying = e.detail.isPlaying;
-  }
-
   onMount(async () => {
     window.addEventListener("contextmenu", handleContextMenu);
     window.addEventListener("click", handleClickOutside);
     window.addEventListener("keydown", handleKeydown);
-    window.addEventListener(
-      "lofi-play-state-changed",
-      handlePlayStateChange as EventListener,
-    );
   });
 
   onDestroy(() => {
     window.removeEventListener("contextmenu", handleContextMenu);
     window.removeEventListener("click", handleClickOutside);
     window.removeEventListener("keydown", handleKeydown);
-    window.removeEventListener(
-      "lofi-play-state-changed",
-      handlePlayStateChange as EventListener,
-    );
   });
 </script>
 
@@ -100,13 +88,13 @@
   >
     <button class="menu-item" on:click={togglePlay}>
       <span class="icon">
-        {#if isPlaying}
+        {#if $isPlaying}
           <IconPlayerPause size={16} />
         {:else}
           <IconPlayerPlay size={16} />
         {/if}
       </span>
-      <span>{isPlaying ? $t.context_menu.pause : $t.context_menu.play}</span>
+      <span>{$isPlaying ? $t.context_menu.pause : $t.context_menu.play}</span>
     </button>
 
     <div class="divider"></div>

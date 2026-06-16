@@ -17,6 +17,10 @@
     selectStation,
   } from "../../stores/radio";
   import { openPicker } from "../../stores/picker";
+
+  function hideBrokenFavicon(e: Event) {
+    (e.currentTarget as HTMLImageElement).style.display = "none";
+  }
 </script>
 
 <div class="radio-player">
@@ -28,8 +32,8 @@
   {:else}
     <button class="station-name open" on:click={openPicker} title={$current?.name ?? "Stations"}>
       <IconList size={14} />
-      {#if $current?.favicon && $current.favicon.startsWith("https")}
-        <img class="np-fav" src={$current.favicon} alt="" />
+      {#if $current?.favicon && $current.favicon.startsWith("https://")}
+        <img class="np-fav" src={$current.favicon} alt="" on:error={hideBrokenFavicon} />
       {/if}
       {#if $buffering}
         <span class="dot-spin" aria-hidden="true"></span> {$current?.name ?? ""}

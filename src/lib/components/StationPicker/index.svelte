@@ -41,11 +41,15 @@
     moreGenre = g;
     void loadStations(GENRE_TAG[g], 128);
   }
+
+  function hideBrokenFavicon(e: Event) {
+    (e.currentTarget as HTMLImageElement).style.display = "none";
+  }
 </script>
 
 {#if $pickerOpen}
   <!-- Full-screen catcher: a click anywhere outside the sheet closes the picker. -->
-  <button class="picker-backdrop" on:click={closePicker} aria-label="Close stations"></button>
+  <button class="picker-backdrop" on:click={closePicker} tabindex="-1" aria-hidden="true"></button>
   <div class="picker glass">
     <div class="picker-head">
       <h3>{$t.picker.title}</h3>
@@ -81,8 +85,8 @@
         {#each rows as s (s.id)}
           <div class="row" class:playing={$current?.id === s.id}>
             <button class="row-main" on:click={() => { selectStation(s, rows); closePicker(); }}>
-              {#if s.favicon && s.favicon.startsWith("https")}
-                <img class="fav-img" src={s.favicon} alt="" />
+              {#if s.favicon && s.favicon.startsWith("https://")}
+                <img class="fav-img" src={s.favicon} alt="" on:error={hideBrokenFavicon} />
               {:else}
                 <span class="fav-img icon"><IconMusic size={16} /></span>
               {/if}
