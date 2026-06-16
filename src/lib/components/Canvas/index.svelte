@@ -1,21 +1,19 @@
 <script lang="ts">
   // Canvas is now just the full-screen background layer behind everything.
   // (The generative-audio Visualizer was removed with the Tone.js engine.)
-  import { videoBg } from "../../stores/background";
-  import { convertFileSrc } from "@tauri-apps/api/core";
+  import { bgMedia } from "../../stores/background";
 </script>
 
 <div id="bg" class="canvas">
-  {#if $videoBg}
-    <video
-      class="bg-video"
-      src={convertFileSrc($videoBg.path)}
-      style="object-position: {$videoBg.focalX}% {$videoBg.focalY}%"
-      autoplay
-      loop
-      muted
-      playsinline
-    ></video>
+  {#if $bgMedia}
+    {#if $bgMedia.kind === "video"}
+      <video class="bg-media" src={$bgMedia.src}
+        style="object-position:{$bgMedia.focalX}% {$bgMedia.focalY}%; transform:scale({$bgMedia.scale}); transform-origin:{$bgMedia.focalX}% {$bgMedia.focalY}%"
+        autoplay loop muted playsinline></video>
+    {:else}
+      <img class="bg-media" src={$bgMedia.src} alt=""
+        style="object-position:{$bgMedia.focalX}% {$bgMedia.focalY}%; transform:scale({$bgMedia.scale}); transform-origin:{$bgMedia.focalX}% {$bgMedia.focalY}%" />
+    {/if}
   {/if}
   <slot />
 </div>
@@ -29,10 +27,9 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    transition: background-image 0.3s ease;
   }
 
-  .bg-video {
+  .bg-media {
     position: absolute;
     inset: 0;
     width: 100%;

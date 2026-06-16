@@ -15,7 +15,8 @@
   import { closePicker } from "./lib/stores/picker";
   import { isTypingTarget } from "./lib/utils/dom";
   import Canvas from "./lib/components/Canvas/index.svelte";
-  import { setVideoBg } from "./lib/stores/background";
+  import { setBgMedia, getTransform, hasTransform, saveTransform } from "./lib/stores/background";
+  import { convertFileSrc } from "@tauri-apps/api/core";
   import Controls from "./lib/components/Controls/index.svelte";
   import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
   import TopBar from "./lib/components/TopBar/TopBar.svelte";
@@ -90,48 +91,42 @@
     document.documentElement.dir = $dir;
     document.documentElement.lang = $locale;
 
-    const bgEl = document.getElementById("bg");
     const bgType = localStorage.getItem("bg-type") || "default";
 
-    if (bgEl) {
-      if (bgType === "custom") {
-        const customBgId = localStorage.getItem("custom-bg-id");
-        if (customBgId) {
-          import("./lib/localDB").then(async ({ default: localDB }) => {
-            const saved = await localDB.getItem("custom-backgrounds");
-            if (saved) {
-              const customs = JSON.parse(saved) as Array<{
-                id: string;
-                dataUrl?: string;
-                kind?: string;
-                path?: string;
-                focalX?: number;
-                focalY?: number;
-              }>;
-              const match = customs.find((b) => b.id === customBgId);
-              if (match) {
-                if (match.kind === "video" && match.path) {
-                  setVideoBg(match.path, match.focalX ?? 50, match.focalY ?? 50);
-                } else if (match.dataUrl) {
-                  const img  = new Image();
-                  img.onload = () => {
-                    bgEl.style.backgroundImage = `url('${match.dataUrl}')`;
-                  };
-                  img.src = match.dataUrl;
+    if (bgType === "custom") {
+      const customBgId = localStorage.getItem("custom-bg-id");
+      if (customBgId) {
+        import("./lib/localDB").then(async ({ default: localDB }) => {
+          const saved = await localDB.getItem("custom-backgrounds");
+          if (saved) {
+            const customs = JSON.parse(saved) as Array<{
+              id: string;
+              dataUrl?: string;
+              kind?: string;
+              path?: string;
+              focalX?: number;
+              focalY?: number;
+            }>;
+            const match = customs.find((b) => b.id === customBgId);
+            if (match) {
+              if (match.kind === "video" && match.path) {
+                if (!hasTransform(match.id)) {
+                  saveTransform(match.id, { focalX: match.focalX ?? 50, focalY: match.focalY ?? 50, scale: 1 });
                 }
+                const t = getTransform(match.id);
+                setBgMedia("video", convertFileSrc(match.path), t.focalX, t.focalY, t.scale);
+              } else if (match.dataUrl) {
+                const t = getTransform(match.id);
+                setBgMedia("image", match.dataUrl, t.focalX, t.focalY, t.scale);
               }
             }
-          });
-        }
-      } else {
-        const id  = localStorage.getItem("bg-id") || "1";
-        const src = `assets/background/bg${id}.webp`;
-        const img = new Image();
-        img.onload = () => {
-          bgEl.style.backgroundImage = `url('${src}')`;
-        };
-        img.src = src;
+          }
+        });
       }
+    } else {
+      const id = localStorage.getItem("bg-id") || "1";
+      const t = getTransform(`default_${id}`);
+      setBgMedia("image", `assets/background/bg${id}.webp`, t.focalX, t.focalY, t.scale);
     }
   });
 

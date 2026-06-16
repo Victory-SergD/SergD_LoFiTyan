@@ -1,40 +1,80 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { get } from "svelte/store";
-import { videoBg, setVideoBg, setFocal, clearVideoBg } from "./background";
+import {
+  bgMedia,
+  setBgMedia,
+  setFocal,
+  setScale,
+  getTransform,
+  hasTransform,
+  saveTransform,
+} from "./background";
 
 beforeEach(() => {
-  clearVideoBg();
+  bgMedia.set(null);
+  localStorage.clear();
 });
 
-describe("videoBg store", () => {
+describe("bgMedia store", () => {
   it("starts null", () => {
-    expect(get(videoBg)).toBeNull();
+    expect(get(bgMedia)).toBeNull();
   });
 
-  it("setVideoBg sets path and focal", () => {
-    setVideoBg("/a/b.mp4", 30, 70);
-    expect(get(videoBg)).toEqual({ path: "/a/b.mp4", focalX: 30, focalY: 70 });
+  it("setBgMedia sets kind, src, and defaults focal/scale", () => {
+    setBgMedia("image", "u");
+    expect(get(bgMedia)).toEqual({ kind: "image", src: "u", focalX: 50, focalY: 50, scale: 1 });
   });
 
-  it("setVideoBg defaults focal to 50/50", () => {
-    setVideoBg("/x.mp4");
-    expect(get(videoBg)).toEqual({ path: "/x.mp4", focalX: 50, focalY: 50 });
+  it("setBgMedia clamps scale to MAX_SCALE (3)", () => {
+    setBgMedia("video", "p", 10, 90, 5);
+    expect(get(bgMedia)).toEqual({ kind: "video", src: "p", focalX: 10, focalY: 90, scale: 3 });
   });
 
-  it("setFocal clamps out-of-range values and keeps path", () => {
-    setVideoBg("/x.mp4", 50, 50);
-    setFocal(120, -5);
-    expect(get(videoBg)).toEqual({ path: "/x.mp4", focalX: 100, focalY: 0 });
+  it("setFocal clamps out-of-range values and keeps kind/src/scale", () => {
+    setBgMedia("image", "u", 50, 50, 1);
+    setFocal(120, -1);
+    expect(get(bgMedia)).toEqual({ kind: "image", src: "u", focalX: 100, focalY: 0, scale: 1 });
   });
 
-  it("setFocal is a no-op when videoBg is null", () => {
+  it("setScale clamps to MIN_SCALE (1) when below", () => {
+    setBgMedia("image", "u");
+    setScale(0.2);
+    expect(get(bgMedia)!.scale).toBe(1);
+  });
+
+  it("setScale clamps to MAX_SCALE (3) when above", () => {
+    setBgMedia("image", "u");
+    setScale(9);
+    expect(get(bgMedia)!.scale).toBe(3);
+  });
+
+  it("setFocal is a no-op when bgMedia is null", () => {
     setFocal(50, 50);
-    expect(get(videoBg)).toBeNull();
+    expect(get(bgMedia)).toBeNull();
   });
 
-  it("clearVideoBg sets store to null", () => {
-    setVideoBg("/x.mp4");
-    clearVideoBg();
-    expect(get(videoBg)).toBeNull();
+  it("setScale is a no-op when bgMedia is null", () => {
+    setScale(2);
+    expect(get(bgMedia)).toBeNull();
+  });
+});
+
+describe("transform persistence", () => {
+  it("saveTransform then getTransform returns saved values", () => {
+    saveTransform("x", { focalX: 10, focalY: 20, scale: 2 });
+    expect(getTransform("x")).toEqual({ focalX: 10, focalY: 20, scale: 2 });
+  });
+
+  it("getTransform returns defaults for unknown id", () => {
+    expect(getTransform("absent")).toEqual({ focalX: 50, focalY: 50, scale: 1 });
+  });
+
+  it("hasTransform returns true for saved id", () => {
+    saveTransform("x", { focalX: 10, focalY: 20, scale: 2 });
+    expect(hasTransform("x")).toBe(true);
+  });
+
+  it("hasTransform returns false for absent id", () => {
+    expect(hasTransform("absent")).toBe(false);
   });
 });

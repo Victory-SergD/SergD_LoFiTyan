@@ -12,7 +12,7 @@
   import localDB from "../../../localDB";
   import { t } from "../../../locales/store";
   import { isTypingTarget } from "../../../utils/dom";
-  import { videoBg, setVideoBg, setFocal, clearVideoBg } from "../../../stores/background";
+  import { setBgMedia, setFocal, getTransform, hasTransform, saveTransform } from "../../../stores/background";
 
   const MAX_DIMENSION = 1920;
   const WEBP_QUALITY  = 0.85;
@@ -158,9 +158,6 @@
     window.dispatchEvent(new CustomEvent("backgroundsUpdated"));
 
     if (bgType === "custom" && customBgId === bg.id) {
-      if (bg.kind === "video") {
-        clearVideoBg();
-      }
       if (allBackgrounds.length > 0) {
         const first = allBackgrounds[0];
         if (first.kind === "video") {
@@ -173,8 +170,10 @@
       } else {
         localStorage.setItem("bg-type", "default");
         localStorage.removeItem("custom-bg-id");
-        const bgElement = document.getElementById("bg");
-        if (bgElement) bgElement.style.backgroundImage = `url('assets/background/bg${id}.webp')`;
+        bgType = "default";
+        customBgId = null;
+        const t = getTransform(`default_${id}`);
+        setBgMedia("image", `assets/background/bg${id}.webp`, t.focalX, t.focalY, t.scale);
       }
     }
   }
@@ -247,7 +246,11 @@
   }
 
   function applyVideoItem(item: any) {
-    setVideoBg(item.path, item.focalX, item.focalY);
+    if (!hasTransform(item.id)) {
+      saveTransform(item.id, { focalX: item.focalX ?? 50, focalY: item.focalY ?? 50, scale: 1 });
+    }
+    const t = getTransform(item.id);
+    setBgMedia("video", convertFileSrc(item.path), t.focalX, t.focalY, t.scale);
     id = item.id;
     bgType = "custom";
     customBgId = item.id;
@@ -256,17 +259,14 @@
   }
 
   function applyCurrentBackground() {
-    const bg = document.getElementById("bg");
-    if (!bg) return;
-
     if (bgType === "custom" && customBgId) {
       const customBg = customBackgrounds.find((bg) => bg.id === customBgId);
       if (customBg) {
         if (customBg.kind === "video") {
-          setVideoBg(customBg.path, customBg.focalX, customBg.focalY);
+          applyVideoItem(customBg);
         } else {
-          clearVideoBg();
-          bg.style.backgroundImage = `url('${customBg.dataUrl}')`;
+          const t = getTransform(customBg.id);
+          setBgMedia("image", customBg.dataUrl, t.focalX, t.focalY, t.scale);
         }
         return;
       } else {
@@ -275,8 +275,8 @@
         localStorage.removeItem("custom-bg-id");
       }
     }
-    clearVideoBg();
-    bg.style.backgroundImage = `url('assets/background/bg${id}.webp')`;
+    const t = getTransform(`default_${id}`);
+    setBgMedia("image", `assets/background/bg${id}.webp`, t.focalX, t.focalY, t.scale);
   }
 
   function nextBg() {
@@ -312,16 +312,10 @@
   }
 
   function applyBackground(background: any) {
-    clearVideoBg();
-
-    const bg = document.getElementById("bg");
-    if (!bg) return;
-
     isTransitioning = true;
 
     const img = new Image();
     img.onload = () => {
-      bg.style.backgroundImage = `url('${background.url}')`;
       isTransitioning = false;
     };
     img.onerror = () => { isTransitioning = false; };
@@ -334,11 +328,15 @@
       localStorage.setItem("bg-id", id.toString());
       localStorage.setItem("bg-type", "default");
       localStorage.removeItem("custom-bg-id");
+      const t = getTransform(`default_${id}`);
+      setBgMedia("image", background.url, t.focalX, t.focalY, t.scale);
     } else {
       customBgId = background.id;
       bgType = "custom";
       localStorage.setItem("bg-type", "custom");
       localStorage.setItem("custom-bg-id", customBgId);
+      const t = getTransform(background.id);
+      setBgMedia("image", background.url, t.focalX, t.focalY, t.scale);
     }
   }
 
@@ -380,6 +378,9 @@
       item.focalX = fx;
       item.focalY = fy;
       saveCustomBackgrounds();
+      // persist into the transforms map too
+      const existing = getTransform(item.id);
+      saveTransform(item.id, { ...existing, focalX: fx, focalY: fy });
     }
     setFocal(fx, fy);
     customBackgrounds = customBackgrounds; // trigger Svelte reactivity for the marker
