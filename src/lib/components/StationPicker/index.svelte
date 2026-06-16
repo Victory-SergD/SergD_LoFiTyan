@@ -44,6 +44,8 @@
 </script>
 
 {#if $pickerOpen}
+  <!-- Full-screen catcher: a click anywhere outside the sheet closes the picker. -->
+  <button class="picker-backdrop" on:click={closePicker} aria-label="Close stations"></button>
   <div class="picker glass">
     <div class="picker-head">
       <h3>{$t.picker.title}</h3>
@@ -78,7 +80,7 @@
       {:else}
         {#each rows as s (s.id)}
           <div class="row" class:playing={$current?.id === s.id}>
-            <button class="row-main" on:click={() => selectStation(s)}>
+            <button class="row-main" on:click={() => { selectStation(s); closePicker(); }}>
               {#if s.favicon && s.favicon.startsWith("https")}
                 <img class="fav-img" src={s.favicon} alt="" />
               {:else}
@@ -99,6 +101,16 @@
 {/if}
 
 <style>
+  .picker-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: default;
+  }
   .picker {
     position: fixed;
     left: 0;

@@ -307,6 +307,41 @@ describe("playback transitions (FakeAudio)", () => {
     created[0].listeners["playing"]?.forEach((fn) => fn());
     expect(get(mod.buffering)).toBe(false);
   });
+
+  it("ignores an AbortError from an interrupted station switch (no bogus error)", async () => {
+    const mod = await import("./radio");
+    mod.setAudioFactory(
+      () =>
+        ({
+          src: "",
+          volume: 1,
+          paused: true,
+          play: () =>
+            Promise.reject(new DOMException("The operation was aborted.", "AbortError")),
+          pause() {},
+          addEventListener() {},
+        }) as unknown as HTMLAudioElement,
+    );
+    const station = {
+      id: "z", name: "Z", url: "https://z.example/s", favicon: "", codec: "MP3", bitrate: 128, tags: "",
+    };
+    await mod.play(station);
+    // current is set, but the AbortError must NOT surface as an error.
+    expect(get(mod.current)?.id).toBe("z");
+    expect(get(mod.error)).toBeNull();
+  });
+
+  it("selectStation is a no-op when the same station is already playing", async () => {
+    const { mod, created } = await setup();
+    const list = get(mod.stations);
+    mod.selectStation(list[0]);
+    await Promise.resolve();
+    expect(get(mod.isPlaying)).toBe(true);
+    const playsBefore = created[0].played;
+    mod.selectStation(list[0]); // same station, already playing -> no restart
+    await Promise.resolve();
+    expect(created[0].played).toBe(playsBefore);
+  });
 });
 
 describe("station picker store", () => {

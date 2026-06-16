@@ -241,9 +241,20 @@ export async function play(station: RadioStation): Promise<void> {
     await el.play();
     isPlaying.set(true);
   } catch (e) {
+    // Switching stations changes `el.src` mid-load, so the webview rejects the
+    // previous in-flight play() with an AbortError ("The operation was aborted").
+    // That's not a real failure — the newer station is the one playing — so we
+    // ignore it instead of flashing a bogus error over music that's actually fine.
+    // NB: a play() rejection is a DOMException, which is NOT `instanceof Error` in
+    // every engine, so match on the `name`/message rather than the Error type.
+    const name = (e as { name?: string } | null)?.name;
+    const msg = e instanceof Error ? e.message : String(e);
+    if (name === "AbortError" || /abort/i.test(msg)) {
+      return;
+    }
     isPlaying.set(false);
     buffering.set(false);
-    error.set(e instanceof Error ? e.message : String(e));
+    error.set(msg);
   }
 }
 
@@ -251,6 +262,9 @@ const LAST_KEY = "lofityan.last-station";
 
 /** Play a station and remember it as the last-played for next launch. */
 export function selectStation(s: RadioStation): void {
+  // Already playing this exact station -> no-op, so re-tapping it in the picker
+  // doesn't needlessly restart the stream (which would also trigger an AbortError).
+  if (get(current)?.id === s.id && get(isPlaying)) return;
   try {
     localStorage.setItem(LAST_KEY, JSON.stringify(s));
   } catch {

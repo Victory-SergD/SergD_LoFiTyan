@@ -27,6 +27,7 @@
     </button>
   {:else}
     <button class="station-name open" on:click={openPicker} title={$current?.name ?? "Stations"}>
+      <IconList size={14} />
       {#if $current?.favicon && $current.favicon.startsWith("https")}
         <img class="np-fav" src={$current.favicon} alt="" />
       {/if}
@@ -38,9 +39,6 @@
     </button>
   {/if}
   <div class="controls">
-    <button class="nav-button glass" on:click={openPicker} aria-label="Stations">
-      <IconList size={18} />
-    </button>
     <button class="nav-button glass" on:click={playPrev} aria-label="Previous station">
       <IconPlayerTrackPrevFilled size={20} />
     </button>

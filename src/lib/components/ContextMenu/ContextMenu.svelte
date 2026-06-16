@@ -91,8 +91,11 @@
 {#if visible}
   <div
     class="context-menu glass"
+    role="menu"
+    tabindex="-1"
     style="top: {y}px; left: {x}px;"
     on:click|stopPropagation
+    on:keydown|stopPropagation
     on:contextmenu|preventDefault
   >
     <button class="menu-item" on:click={togglePlay}>
