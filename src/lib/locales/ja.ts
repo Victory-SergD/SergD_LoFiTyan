@@ -79,4 +79,7 @@ export const ja: Translations = {
     canvas: {
         video_unavailable: '動画を読み込めません — 別のファイルを選んでください',
     },
+    radio: {
+        stream_error: 'この局を再生できませんでした',
+    },
 };

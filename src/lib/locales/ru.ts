@@ -79,4 +79,7 @@ export const ru: Translations = {
     canvas: {
         video_unavailable: 'Видео недоступно — выбери другой файл',
     },
+    radio: {
+        stream_error: 'Не удалось включить станцию',
+    },
 };

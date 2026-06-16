@@ -79,4 +79,7 @@ export const nl: Translations = {
     canvas: {
         video_unavailable: 'Video niet beschikbaar — kies een ander bestand',
     },
+    radio: {
+        stream_error: 'Kon dit station niet afspelen',
+    },
 };

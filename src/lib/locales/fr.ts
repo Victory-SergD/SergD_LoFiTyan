@@ -79,4 +79,7 @@ export const fr: Translations = {
     canvas: {
         video_unavailable: 'Vidéo indisponible — essaie un autre fichier',
     },
+    radio: {
+        stream_error: 'Impossible de lire cette station',
+    },
 };

@@ -94,7 +94,7 @@
       {:else}
         {#each rows as s (s.id)}
           <div class="row" class:playing={$current?.id === s.id}>
-            <button class="row-main" on:click={() => { selectStation(s, rows); closePicker(); }}>
+            <button class="row-main" on:click={() => { selectStation(s, rows, $pickerTab === "★" ? "favorites" : $pickerTab === "More" ? "more" : "seed"); closePicker(); }}>
               {#if s.favicon && s.favicon.startsWith("https://")}
                 <img class="fav-img" src={s.favicon} alt="" on:error={hideBrokenFavicon} />
               {:else}

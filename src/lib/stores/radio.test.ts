@@ -346,7 +346,7 @@ describe("playback transitions (FakeAudio)", () => {
     // Fire the registered error listener.
     created[0].listeners["error"]?.forEach((fn) => fn());
     expect(get(mod.isPlaying)).toBe(false);
-    expect(get(mod.error)).toBe("Stream failed to play");
+    expect(get(mod.error)).toBe("stream-failed");
     expect(get(mod.buffering)).toBe(false);
   });
 
@@ -411,6 +411,26 @@ describe("playback transitions (FakeAudio)", () => {
     mod.selectStation(list[0]); // same station, already playing -> restarts
     await Promise.resolve();
     expect(created[0].played).toBe(playsBefore + 1);
+  });
+
+  it("playNext skips un-starred station when navigating favorites queue (live desync fix)", async () => {
+    const { mod } = await setup();
+    // Build a favorites list [a, b, c]
+    const a = { id: "fav-a", name: "Fav A", url: "https://a.example/s", favicon: "", codec: "MP3", bitrate: 128, tags: "" };
+    const b = { id: "fav-b", name: "Fav B", url: "https://b.example/s", favicon: "", codec: "MP3", bitrate: 128, tags: "" };
+    const c = { id: "fav-c", name: "Fav C", url: "https://c.example/s", favicon: "", codec: "MP3", bitrate: 128, tags: "" };
+    mod.favorites.set([a, b, c]);
+    // Select from the favorites tab (source = "favorites")
+    mod.selectStation(a, [a, b, c], "favorites");
+    await Promise.resolve();
+    expect(get(mod.current)?.id).toBe("fav-a");
+    // Remove b from favorites — live list is now [a, c]
+    mod.toggleFavorite(b);
+    expect(get(mod.favorites).map((s) => s.id)).toEqual(["fav-a", "fav-c"]);
+    // playNext from a should land on c, NOT the stale b
+    mod.playNext();
+    await Promise.resolve();
+    expect(get(mod.current)?.id).toBe("fav-c");
   });
 });
 

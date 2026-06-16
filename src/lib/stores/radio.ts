@@ -53,6 +53,10 @@ export const SEED: Record<Genre, RadioStation[]> = {
   ],
 };
 
+// ---- queue source ----
+export type QueueSource = "seed" | "favorites" | "more";
+export const queueSource = writable<QueueSource>("seed");
+
 // ---- public reactive state ----
 export const stations = writable<RadioStation[]>([]);
 export const current = writable<RadioStation | null>(null);
@@ -218,7 +222,7 @@ function ensureAudio(): HTMLAudioElement {
     audio.addEventListener("error", () => {
       // A station that fails to load/decode. Keep it simple: surface the error
       // and stop, without auto-advancing.
-      error.set("Stream failed to play");
+      error.set("stream-failed");
       isPlaying.set(false);
       buffering.set(false);
     });
@@ -258,7 +262,7 @@ export async function play(station: RadioStation): Promise<void> {
     }
     isPlaying.set(false);
     buffering.set(false);
-    error.set(msg);
+    error.set("stream-failed");
   }
 }
 
@@ -285,8 +289,11 @@ function seedGenreOf(s: RadioStation): RadioStation[] | null {
  * `list` it was picked from to drive ◀ ▶ navigation; omit it to keep the
  * current queue (used by playNext/playPrev themselves).
  */
-export function selectStation(s: RadioStation, list?: RadioStation[]): void {
-  if (list && list.length) queue.set(list);
+export function selectStation(s: RadioStation, list?: RadioStation[], source: QueueSource = "seed"): void {
+  if (list && list.length) {
+    queue.set(list);
+    queueSource.set(source);
+  }
   // Re-selecting the current station intentionally restarts playback — this is
   // the primary recovery path for a stalled stream. play() already swallows the
   // resulting AbortError so there is no bogus error flash.
@@ -355,7 +362,7 @@ function currentIndex(list: RadioStation[]): number {
 
 /** Advance to the next station within the active queue, wrapping around. */
 export function playNext(): void {
-  const list = get(queue);
+  const list = get(queueSource) === "favorites" ? get(favorites) : get(queue);
   if (list.length === 0) return;
   const idx = currentIndex(list);
   selectStation(list[(idx + 1) % list.length]); // no list arg -> keeps the queue
@@ -363,7 +370,7 @@ export function playNext(): void {
 
 /** Step to the previous station within the active queue, wrapping around. */
 export function playPrev(): void {
-  const list = get(queue);
+  const list = get(queueSource) === "favorites" ? get(favorites) : get(queue);
   if (list.length === 0) return;
   const idx = currentIndex(list);
   // From "no current" (-1) prev should land on the last station.

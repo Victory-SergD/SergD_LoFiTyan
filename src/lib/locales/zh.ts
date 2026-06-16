@@ -79,4 +79,7 @@ export const zh: Translations = {
     canvas: {
         video_unavailable: '视频不可用 — 请尝试其他文件',
     },
+    radio: {
+        stream_error: '无法播放此电台',
+    },
 };

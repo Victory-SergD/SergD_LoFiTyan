@@ -77,4 +77,7 @@ export const en = {
     canvas: {
         video_unavailable: 'Video unavailable — try another file',
     },
+    radio: {
+        stream_error: "Couldn't play this station",
+    },
 };

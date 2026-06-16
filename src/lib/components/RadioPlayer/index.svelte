@@ -28,7 +28,7 @@
   {#if $error}
     <!-- Playback error; let the user retry by re-selecting the current station. -->
     <button class="station-name retry" on:click={() => { if ($current) selectStation($current); }} title={$t.picker.retry}>
-      ⚠ {$error} · ↻
+      ⚠ {$t.radio.stream_error} · ↻
     </button>
   {:else}
     <button class="station-name open" on:click={openPicker} title={$current?.name ?? "Stations"}>

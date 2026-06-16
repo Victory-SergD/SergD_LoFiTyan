@@ -79,4 +79,7 @@ export const hi: Translations = {
     canvas: {
         video_unavailable: 'वीडियो उपलब्ध नहीं — दूसरी फ़ाइल चुनें',
     },
+    radio: {
+        stream_error: 'यह स्टेशन नहीं चला सका',
+    },
 };
