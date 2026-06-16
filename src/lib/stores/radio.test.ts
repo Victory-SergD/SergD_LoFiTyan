@@ -308,3 +308,102 @@ describe("playback transitions (FakeAudio)", () => {
     expect(get(mod.buffering)).toBe(false);
   });
 });
+
+describe("station picker store", () => {
+  const sampleStation = {
+    id: "x",
+    name: "X",
+    url: "https://x/s",
+    favicon: "",
+    codec: "MP3",
+    bitrate: 128,
+    tags: "",
+  };
+
+  it("GENRES equals ['Lo-Fi','Chillhop','Focus','Sleep']", async () => {
+    const { GENRES } = await import("./radio");
+    expect(GENRES).toEqual(["Lo-Fi", "Chillhop", "Focus", "Sleep"]);
+  });
+
+  it("each SEED genre has a non-empty station array", async () => {
+    const { SEED, GENRES } = await import("./radio");
+    for (const genre of GENRES) {
+      expect(Array.isArray(SEED[genre])).toBe(true);
+      expect(SEED[genre].length).toBeGreaterThan(0);
+    }
+  });
+
+  it("every SEED station url starts with https://", async () => {
+    const { SEED, GENRES } = await import("./radio");
+    for (const genre of GENRES) {
+      for (const station of SEED[genre]) {
+        expect(station.url.startsWith("https://")).toBe(true);
+      }
+    }
+  });
+
+  it("all SEED ids are unique across the whole seed", async () => {
+    const { SEED, GENRES } = await import("./radio");
+    const ids: string[] = [];
+    for (const genre of GENRES) {
+      for (const station of SEED[genre]) {
+        ids.push(station.id);
+      }
+    }
+    const unique = new Set(ids);
+    expect(unique.size).toBe(ids.length);
+  });
+
+  it("toggleFavorite adds then removes a station from favorites", async () => {
+    localStorage.clear();
+    const { favorites, toggleFavorite, isFavorite } = await import("./radio");
+
+    // Add
+    toggleFavorite(sampleStation);
+    expect(get(favorites)).toHaveLength(1);
+    expect(isFavorite("x")).toBe(true);
+    expect(localStorage.getItem("lofityan.favorites")).toContain("x");
+
+    // Remove
+    toggleFavorite(sampleStation);
+    expect(get(favorites)).toHaveLength(0);
+    expect(isFavorite("x")).toBe(false);
+  });
+
+  it("selectStation sets current and persists last-station to localStorage", async () => {
+    localStorage.clear();
+    const created: FakeAudio[] = [];
+    const mod = await import("./radio");
+    mod.setAudioFactory((url) => {
+      const a = new FakeAudio(url);
+      created.push(a);
+      return a as unknown as HTMLAudioElement;
+    });
+
+    await mod.selectStation(sampleStation);
+    await Promise.resolve();
+
+    expect(get(mod.current)?.id).toBe("x");
+    const stored = localStorage.getItem("lofityan.last-station");
+    expect(stored).not.toBeNull();
+    expect(stored).toContain("x");
+  });
+
+  it("initRadio restores last station paused (no autoplay)", async () => {
+    localStorage.clear();
+    localStorage.setItem("lofityan.last-station", JSON.stringify(sampleStation));
+
+    const mod = await import("./radio");
+    mod.initRadio();
+
+    expect(get(mod.current)?.id).toBe("x");
+    expect(get(mod.isPlaying)).toBe(false);
+  });
+
+  it("loadStations appends bitrateMin param when > 0", async () => {
+    const fetchMock = mockFetchOk([]);
+    const { loadStations } = await import("./radio");
+    await loadStations("lofi", 192);
+    expect(fetchMock.mock.calls[0][0]).toContain("&bitrateMin=192");
+  });
+});

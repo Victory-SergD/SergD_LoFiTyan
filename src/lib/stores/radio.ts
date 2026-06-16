@@ -17,6 +17,42 @@ export interface RadioStation {
   tags: string;
 }
 
+export type Genre = "Lo-Fi" | "Chillhop" | "Focus" | "Sleep";
+export const GENRES: Genre[] = ["Lo-Fi", "Chillhop", "Focus", "Sleep"];
+// radio-browser tag used for each genre's "More" tab
+export const GENRE_TAG: Record<Genre, string> = {
+  "Lo-Fi": "lofi",
+  "Chillhop": "chillhop",
+  "Focus": "study",
+  "Sleep": "sleep",
+};
+// Curated, hand-verified HQ stations (alive + HTTPS on 2026-06-16). favicon ""
+// -> the picker shows a default icon. These ship in-app, work even if the API is down.
+export const SEED: Record<Genre, RadioStation[]> = {
+  "Lo-Fi": [
+    { id: "reyfm-lofi", name: "REYFM #LOFI", url: "https://listen.reyfm.de/lofi_320kbps.mp3", favicon: "", codec: "MP3", bitrate: 320, tags: "lofi" },
+    { id: "ilm-chillhop", name: "I ♥ Chillhop", url: "https://ilm.stream35.radiohost.de/ilm_ilovechillhop_mp3-192", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi,chillhop" },
+    { id: "loficafe-chilling", name: "Lofi Cafe · Chilling", url: "https://radio.loficafe.net/listen/chilling/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi" },
+    { id: "nia-lofi", name: "NIA Radio Lo-Fi", url: "https://radio.nia.nc/radio/8020/lofi-hq-stream.aac", favicon: "", codec: "AAC", bitrate: 128, tags: "lofi" },
+    { id: "loficafe-gaming", name: "Lofi Cafe · Gaming", url: "https://radio.loficafe.net/listen/gaming/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi" },
+  ],
+  "Chillhop": [
+    { id: "radio-acid", name: "Radio ACID · Chill", url: "https://stream.radioacid.com/stream", favicon: "", codec: "MP3", bitrate: 256, tags: "chillhop" },
+    { id: "loficafe-working", name: "Lofi Cafe · Working", url: "https://radio.loficafe.net/listen/working/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "chillhop" },
+    { id: "fmv-fit-focus", name: "FMV FIT · Focus", url: "https://radio.webicdp.com/listen/fmvfitradiofocus/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "chillhop" },
+  ],
+  "Focus": [
+    { id: "loficafe-studying", name: "Lofi Cafe · Studying", url: "https://radio.loficafe.net/listen/studying/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "study" },
+    { id: "rautemusik-study", name: "rautemusik STUDY", url: "https://study-high.rautemusik.fm/", favicon: "", codec: "MP3", bitrate: 192, tags: "study" },
+  ],
+  "Sleep": [
+    { id: "loficafe-sleeping", name: "Lofi Cafe · Sleeping", url: "https://radio.loficafe.net/listen/sleeping/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "sleep" },
+    { id: "asp", name: "Ambient Sleeping Pill", url: "https://radio.stereoscenic.com/asp-s", favicon: "", codec: "MP3", bitrate: 128, tags: "sleep,ambient" },
+    { id: "spokoynoe", name: "Спокойное радио", url: "https://listen9.myradio24.com/6262", favicon: "", codec: "MP3", bitrate: 128, tags: "sleep,calm" },
+    { id: "abc-lounge", name: "ABC Lounge", url: "https://eu1.fastcast4u.com/proxy/kpmxz?mp=/1", favicon: "", codec: "MP3", bitrate: 128, tags: "lounge,chill" },
+  ],
+};
+
 // ---- public reactive state ----
 export const stations = writable<RadioStation[]>([]);
 export const current = writable<RadioStation | null>(null);
@@ -24,6 +60,30 @@ export const isPlaying = writable<boolean>(false);
 export const loading = writable<boolean>(false);
 export const error = writable<string | null>(null);
 export const buffering = writable<boolean>(false);
+
+// ---- favorites (persisted) ----
+const FAV_KEY = "lofityan.favorites";
+function loadFavorites(): RadioStation[] {
+  try {
+    const raw = localStorage.getItem(FAV_KEY);
+    return raw ? (JSON.parse(raw) as RadioStation[]) : [];
+  } catch {
+    return [];
+  }
+}
+export const favorites = writable<RadioStation[]>(loadFavorites());
+export function isFavorite(id: string): boolean {
+  return get(favorites).some((f) => f.id === id);
+}
+export function toggleFavorite(s: RadioStation): void {
+  favorites.update((list) => {
+    const next = list.some((f) => f.id === s.id)
+      ? list.filter((f) => f.id !== s.id)
+      : [...list, s];
+    localStorage.setItem(FAV_KEY, JSON.stringify(next));
+    return next;
+  });
+}
 
 // Keep at most this many stations after filtering.
 const MAX_STATIONS = 40;
@@ -59,12 +119,13 @@ const API_MIRRORS = [
  * in turn and stops at the first success. Only if EVERY mirror fails are the
  * existing `stations` left untouched and the last error surfaced in `error`.
  */
-export async function loadStations(tag = "lofi"): Promise<void> {
+export async function loadStations(tag = "lofi", bitrateMin = 0): Promise<void> {
   loading.set(true);
   error.set(null);
   const path =
     `/json/stations/bytag/${encodeURIComponent(tag)}` +
-    `?hidebroken=true&order=clickcount&reverse=true&limit=80`;
+    `?hidebroken=true&order=clickcount&reverse=true&limit=80` +
+    (bitrateMin > 0 ? `&bitrateMin=${bitrateMin}` : "");
   let lastError: unknown = new Error("no radio mirror reachable");
   for (const base of API_MIRRORS) {
     try {
@@ -183,6 +244,30 @@ export async function play(station: RadioStation): Promise<void> {
   }
 }
 
+const LAST_KEY = "lofityan.last-station";
+
+/** Play a station and remember it as the last-played for next launch. */
+export function selectStation(s: RadioStation): void {
+  try {
+    localStorage.setItem(LAST_KEY, JSON.stringify(s));
+  } catch {
+    /* ignore persistence failure */
+  }
+  void play(s);
+}
+
+/** Restore the last-played station (paused) on launch. No network, no autoplay. */
+export function initRadio(): void {
+  try {
+    const raw = localStorage.getItem(LAST_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw) as RadioStation;
+    if (s && typeof s.url === "string") current.set(s);
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Pause the current stream. Leaves `current` intact so it can be resumed. */
 export function pause(): void {
   if (audio) {
@@ -209,7 +294,9 @@ export function togglePlay(): void {
   const list = get(stations);
   if (list.length > 0) {
     void play(list[0]);
+    return;
   }
+  selectStation(SEED["Lo-Fi"][0]);
 }
 
 // Resolve the index of `current` within `stations`, or -1 if absent.
