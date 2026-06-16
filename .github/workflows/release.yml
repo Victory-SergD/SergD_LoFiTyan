@@ -69,5 +69,7 @@ jobs:
             Скачайте установщик для вашей ОС из ассетов ниже.
             macOS-сборка **не подписана** — инструкция по первому запуску в README.
           releaseDraft: true
-          prerelease: false
+          # Tags with a pre-release suffix (e.g. v1.0.0-beta) are marked pre-release;
+          # clean tags (e.g. v1.0.0) publish as stable.
+          prerelease: ${{ contains(github.ref_name, '-') }}
           args: ${{ matrix.args }}

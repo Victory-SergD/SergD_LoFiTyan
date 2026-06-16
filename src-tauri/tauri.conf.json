@@ -18,7 +18,7 @@
   },
   "productName": "LoFiTyan",
   "mainBinaryName": "LoFiTyan",
-  "version": "1.2.0",
+  "version": "1.0.0",
   "identifier": "io.github.victory-sergd.lofityan",
   "plugins": {},
   "app": {
