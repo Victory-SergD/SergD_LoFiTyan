@@ -2,7 +2,7 @@
   import {
     IconArrowLeft,
     IconArrowRight,
-    IconPlus,
+    IconPhoto,
     IconTrash,
     IconMovie,
   } from "@tabler/icons-svelte";
@@ -395,7 +395,7 @@
       class="upload-btn"
       class:uploading={isUploading}
     >
-      <IconPlus size={16} />
+      <IconPhoto size={16} />
     </label>
     <button
       class="upload-btn"
