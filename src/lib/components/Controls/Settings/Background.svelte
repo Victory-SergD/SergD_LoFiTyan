@@ -5,6 +5,7 @@
     IconPhoto,
     IconTrash,
     IconMovie,
+    IconExternalLink,
   } from "@tabler/icons-svelte";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/plugin-dialog";
@@ -417,22 +418,24 @@
 <div>
   <div class="header">
     <h4>{$t.settings.background.title}</h4>
-    <label
-      data-tooltip={$t.settings.background.add_custom}
-      for="bg-upload"
-      class="upload-btn"
-      class:uploading={isUploading}
-    >
-      <IconPhoto size={16} />
-    </label>
-    <button
-      class="upload-btn"
-      data-tooltip={$t.settings.background.add_video}
-      on:click={addVideo}
-      type="button"
-    >
-      <IconMovie size={16} />
-    </button>
+    <div class="header-actions">
+      <label
+        data-tooltip={$t.settings.background.add_custom}
+        for="bg-upload"
+        class="upload-btn"
+        class:uploading={isUploading}
+      >
+        <IconPhoto size={16} />
+      </label>
+      <button
+        class="upload-btn"
+        data-tooltip={$t.settings.background.add_video}
+        on:click={addVideo}
+        type="button"
+      >
+        <IconMovie size={16} />
+      </button>
+    </div>
     <input
       id="bg-upload"
       type="file"
@@ -467,7 +470,8 @@
                 bind:this={mediaEl}
                 src={$bgMedia.src}
                 on:loadedmetadata={onMediaMeta}
-                preload="metadata"
+                autoplay
+                loop
                 muted
                 playsinline
               ></video>
@@ -564,9 +568,33 @@
   <div class="bg-sources">
     <span class="bg-sources-title">{$t.settings.background.sources_title}</span>
     <div class="bg-sources-links">
-      <button type="button" on:click={() => void openExternal("https://lofigirl.com/generator")}>Lofi Girl</button>
-      <button type="button" on:click={() => void openExternal("https://motionbgs.com/search?q=Lofi+Girl")}>MotionBGs</button>
-      <button type="button" on:click={() => void openExternal("https://moewalls.com/category/lifestyle/")}>MoeWalls</button>
+      <button
+        type="button"
+        class="source-btn"
+        data-tooltip="Lofi Girl · lofigirl.com"
+        on:click={() => void openExternal("https://lofigirl.com/generator")}
+      >
+        <IconExternalLink size={14} />
+        <span>Lofi Girl</span>
+      </button>
+      <button
+        type="button"
+        class="source-btn"
+        data-tooltip="MotionBGs · motionbgs.com"
+        on:click={() => void openExternal("https://motionbgs.com/search?q=Lofi+Girl")}
+      >
+        <IconExternalLink size={14} />
+        <span>MotionBGs</span>
+      </button>
+      <button
+        type="button"
+        class="source-btn"
+        data-tooltip="MoeWalls · moewalls.com"
+        on:click={() => void openExternal("https://moewalls.com/category/lifestyle/")}
+      >
+        <IconExternalLink size={14} />
+        <span>MoeWalls</span>
+      </button>
     </div>
   </div>
 </div>
@@ -583,6 +611,12 @@
     margin: 0;
     color: white;
     font-size: 1.1em;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .upload-btn {
@@ -772,6 +806,10 @@
     gap: 8px;
   }
   .bg-sources-links button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
     padding: 5px 10px;
     font-size: 0.82em;
     background-color: rgba(255, 255, 255, 0.1);
