@@ -10,6 +10,7 @@ export const en = {
             focal_hint: 'Click where to keep centered when cropped to your screen',
             zoom_hint: 'Zoom the background — it always stays edge-to-edge',
             skipped: 'Skipped (not an image or too large):',
+            sources_title: 'Where to get backgrounds & videos',
         },
         volume: {
             title: 'Volume',

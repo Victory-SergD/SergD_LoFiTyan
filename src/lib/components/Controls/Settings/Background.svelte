@@ -8,6 +8,7 @@
   } from "@tabler/icons-svelte";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/plugin-dialog";
+  import { open as openExternal } from "@tauri-apps/plugin-shell";
   import { convertFileSrc } from "@tauri-apps/api/core";
   import localDB from "../../../localDB";
   import { t } from "../../../locales/store";
@@ -559,6 +560,15 @@
   {#if uploadErrors.length}
     <div class="upload-errors">{$t.settings.background.skipped} {uploadErrors.join(", ")}</div>
   {/if}
+
+  <div class="bg-sources">
+    <span class="bg-sources-title">{$t.settings.background.sources_title}</span>
+    <div class="bg-sources-links">
+      <button type="button" on:click={() => void openExternal("https://lofigirl.com/generator")}>Lofi Girl</button>
+      <button type="button" on:click={() => void openExternal("https://motionbgs.com/search?q=Lofi+Girl")}>MotionBGs</button>
+      <button type="button" on:click={() => void openExternal("https://moewalls.com/category/lifestyle/")}>MoeWalls</button>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -743,5 +753,35 @@
     .focal-preview {
       width: 90px;
     }
+  }
+
+  .bg-sources {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .bg-sources-title {
+    display: block;
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
+  }
+  .bg-sources-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .bg-sources-links button {
+    padding: 5px 10px;
+    font-size: 0.82em;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .bg-sources-links button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
   }
 </style>

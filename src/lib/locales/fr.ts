@@ -12,6 +12,7 @@ export const fr: Translations = {
             focal_hint: 'Cliquez sur le point à garder centré lors du recadrage à votre écran',
             zoom_hint: "Zoom sur l'arrière-plan — il reste toujours bord à bord",
             skipped: 'Ignorés (pas une image ou trop volumineux) :',
+            sources_title: 'Où trouver des fonds et vidéos',
         },
         volume: {
             title: 'Volume',

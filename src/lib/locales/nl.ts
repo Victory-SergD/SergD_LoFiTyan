@@ -12,6 +12,7 @@ export const nl: Translations = {
             focal_hint: 'Klik op het punt dat gecentreerd moet blijven bij bijsnijden naar uw scherm',
             zoom_hint: 'Zoom de achtergrond — hij vult altijd het volledige scherm',
             skipped: 'Overgeslagen (geen afbeelding of te groot):',
+            sources_title: "Waar achtergronden en video's vinden",
         },
         volume: {
             title: 'Volume',

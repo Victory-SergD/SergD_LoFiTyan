@@ -12,6 +12,7 @@ export const zh: Translations = {
             focal_hint: '点击要在裁剪时保持居中的位置',
             zoom_hint: '缩放背景 — 始终铺满全屏不留空白',
             skipped: '已跳过（非图片或文件过大）：',
+            sources_title: '在哪里获取背景和视频',
         },
         volume: {
             title: '音量',
