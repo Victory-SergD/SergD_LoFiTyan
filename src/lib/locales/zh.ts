@@ -10,6 +10,7 @@ export const zh: Translations = {
             delete_tooltip: '删除此背景',
             processing: '正在处理图片...',
             focal_hint: '点击要在裁剪时保持居中的位置',
+            zoom_hint: '缩放背景 — 始终铺满全屏不留空白',
         },
         volume: {
             title: '音量',

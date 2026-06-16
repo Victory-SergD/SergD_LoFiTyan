@@ -10,6 +10,7 @@ export const ru: Translations = {
             delete_tooltip: 'Удалить этот фон',
             processing: 'Обработка изображений...',
             focal_hint: 'Кликни, где держать центр кадра при обрезке под экран',
+            zoom_hint: 'Масштаб фона — без пустых полей по краям',
         },
         volume: {
             title: 'Громкость',

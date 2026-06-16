@@ -8,6 +8,7 @@ export const en = {
             delete_tooltip: 'Delete this background',
             processing: 'Processing images...',
             focal_hint: 'Click where to keep centered when cropped to your screen',
+            zoom_hint: 'Zoom the background — it always stays edge-to-edge',
         },
         volume: {
             title: 'Volume',

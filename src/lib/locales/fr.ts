@@ -10,6 +10,7 @@ export const fr: Translations = {
             delete_tooltip: 'Supprimer cet arrière-plan',
             processing: 'Traitement des images...',
             focal_hint: 'Cliquez sur le point à garder centré lors du recadrage à votre écran',
+            zoom_hint: "Zoom sur l'arrière-plan — il reste toujours bord à bord",
         },
         volume: {
             title: 'Volume',

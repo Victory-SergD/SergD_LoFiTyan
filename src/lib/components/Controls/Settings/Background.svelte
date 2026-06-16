@@ -12,7 +12,17 @@
   import localDB from "../../../localDB";
   import { t } from "../../../locales/store";
   import { isTypingTarget } from "../../../utils/dom";
-  import { setBgMedia, setFocal, getTransform, hasTransform, saveTransform } from "../../../stores/background";
+  import {
+    bgMedia,
+    setBgMedia,
+    setFocal,
+    setScale,
+    getTransform,
+    hasTransform,
+    saveTransform,
+    MIN_SCALE,
+    MAX_SCALE,
+  } from "../../../stores/background";
 
   const MAX_DIMENSION = 1920;
   const WEBP_QUALITY  = 0.85;
@@ -28,10 +38,13 @@
   let isUploading = false;
   let isTransitioning = false;
 
-  // video preview state
-  let previewEl: HTMLVideoElement | undefined;
-  let vidW = 16;
-  let vidH = 9;
+  // unified preview state (works for both image and video)
+  let mediaEl: HTMLVideoElement | HTMLImageElement | undefined;
+  let mediaW = 16;
+  let mediaH = 9;
+
+  // reactive current background id for transform persistence
+  $: curId = bgType === "custom" && customBgId ? customBgId : `default_${id}`;
 
   onMount(async () => {
     await loadCustomBackgrounds();
@@ -172,8 +185,8 @@
         localStorage.removeItem("custom-bg-id");
         bgType = "default";
         customBgId = null;
-        const t = getTransform(`default_${id}`);
-        setBgMedia("image", `assets/background/bg${id}.webp`, t.focalX, t.focalY, t.scale);
+        const tr = getTransform(`default_${id}`);
+        setBgMedia("image", `assets/background/bg${id}.webp`, tr.focalX, tr.focalY, tr.scale);
       }
     }
   }
@@ -249,8 +262,8 @@
     if (!hasTransform(item.id)) {
       saveTransform(item.id, { focalX: item.focalX ?? 50, focalY: item.focalY ?? 50, scale: 1 });
     }
-    const t = getTransform(item.id);
-    setBgMedia("video", convertFileSrc(item.path), t.focalX, t.focalY, t.scale);
+    const tr = getTransform(item.id);
+    setBgMedia("video", convertFileSrc(item.path), tr.focalX, tr.focalY, tr.scale);
     id = item.id;
     bgType = "custom";
     customBgId = item.id;
@@ -265,8 +278,8 @@
         if (customBg.kind === "video") {
           applyVideoItem(customBg);
         } else {
-          const t = getTransform(customBg.id);
-          setBgMedia("image", customBg.dataUrl, t.focalX, t.focalY, t.scale);
+          const tr = getTransform(customBg.id);
+          setBgMedia("image", customBg.dataUrl, tr.focalX, tr.focalY, tr.scale);
         }
         return;
       } else {
@@ -275,8 +288,8 @@
         localStorage.removeItem("custom-bg-id");
       }
     }
-    const t = getTransform(`default_${id}`);
-    setBgMedia("image", `assets/background/bg${id}.webp`, t.focalX, t.focalY, t.scale);
+    const tr = getTransform(`default_${id}`);
+    setBgMedia("image", `assets/background/bg${id}.webp`, tr.focalX, tr.focalY, tr.scale);
   }
 
   function nextBg() {
@@ -328,15 +341,15 @@
       localStorage.setItem("bg-id", id.toString());
       localStorage.setItem("bg-type", "default");
       localStorage.removeItem("custom-bg-id");
-      const t = getTransform(`default_${id}`);
-      setBgMedia("image", background.url, t.focalX, t.focalY, t.scale);
+      const tr = getTransform(`default_${id}`);
+      setBgMedia("image", background.url, tr.focalX, tr.focalY, tr.scale);
     } else {
       customBgId = background.id;
       bgType = "custom";
       localStorage.setItem("bg-type", "custom");
       localStorage.setItem("custom-bg-id", customBgId);
-      const t = getTransform(background.id);
-      setBgMedia("image", background.url, t.focalX, t.focalY, t.scale);
+      const tr = getTransform(background.id);
+      setBgMedia("image", background.url, tr.focalX, tr.focalY, tr.scale);
     }
   }
 
@@ -361,11 +374,10 @@
     }
   };
 
-  function onPreviewMeta() {
-    if (previewEl) {
-      vidW = previewEl.videoWidth || 16;
-      vidH = previewEl.videoHeight || 9;
-    }
+  function onMediaMeta() {
+    if (!mediaEl) return;
+    mediaW = (mediaEl as HTMLVideoElement).videoWidth || (mediaEl as HTMLImageElement).naturalWidth || 16;
+    mediaH = (mediaEl as HTMLVideoElement).videoHeight || (mediaEl as HTMLImageElement).naturalHeight || 9;
   }
 
   function onFocalClick(e: MouseEvent) {
@@ -373,17 +385,14 @@
     const r = el.getBoundingClientRect();
     const fx = Math.max(0, Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)));
     const fy = Math.max(0, Math.min(100, Math.round(((e.clientY - r.top) / r.height) * 100)));
-    const item = customBackgrounds.find((b) => b.id === customBgId);
-    if (item) {
-      item.focalX = fx;
-      item.focalY = fy;
-      saveCustomBackgrounds();
-      // persist into the transforms map too
-      const existing = getTransform(item.id);
-      saveTransform(item.id, { ...existing, focalX: fx, focalY: fy });
-    }
     setFocal(fx, fy);
-    customBackgrounds = customBackgrounds; // trigger Svelte reactivity for the marker
+    saveTransform(curId, { focalX: fx, focalY: fy, scale: $bgMedia?.scale ?? 1 });
+  }
+
+  function onZoom(e: Event) {
+    const s = parseFloat((e.currentTarget as HTMLInputElement).value);
+    setScale(s);
+    saveTransform(curId, { focalX: $bgMedia?.focalX ?? 50, focalY: $bgMedia?.focalY ?? 50, scale: s });
   }
 </script>
 
@@ -428,31 +437,31 @@
       )}
       {#if currentBg}
         <div class="preview-container" class:transitioning={isTransitioning}>
-          {#if currentBg.kind === "video"}
-            {@const focalItem = customBackgrounds.find((b) => b.id === customBgId)}
-            <button
-              class="video-preview"
-              data-tooltip={$t.settings.background.focal_hint}
-              style="aspect-ratio: {vidW} / {vidH}"
-              on:click={onFocalClick}
-              type="button"
-            >
+          <button
+            type="button"
+            class="focal-preview"
+            data-tooltip={$t.settings.background.focal_hint}
+            style="aspect-ratio: {mediaW} / {mediaH}"
+            on:click={onFocalClick}
+          >
+            {#if $bgMedia?.kind === "video"}
               <video
-                bind:this={previewEl}
-                src={convertFileSrc(currentBg.path)}
-                on:loadedmetadata={onPreviewMeta}
+                bind:this={mediaEl}
+                src={$bgMedia.src}
+                on:loadedmetadata={onMediaMeta}
                 autoplay
                 loop
                 muted
                 playsinline
               ></video>
-              {#if focalItem}
-                <span class="focal-marker" style="left: {focalItem.focalX}%; top: {focalItem.focalY}%"></span>
-              {/if}
-            </button>
-          {:else}
-            <img id="bg-preview" src={currentBg.url} alt={currentBg.name} loading="lazy" />
-          {/if}
+            {:else if $bgMedia}
+              <img bind:this={mediaEl} src={$bgMedia.src} alt="" on:load={onMediaMeta} />
+            {/if}
+            <span
+              class="focal-marker"
+              style="left:{$bgMedia?.focalX ?? 50}%; top:{$bgMedia?.focalY ?? 50}%"
+            ></span>
+          </button>
           {#if bgType === "custom" && customBgId}
             <button
               class="delete-current-btn"
@@ -467,14 +476,61 @@
           {/if}
         </div>
       {:else}
-        <img id="bg-preview" src="assets/background/bg{id}.webp" alt="" loading="lazy" />
+        <div class="preview-container">
+          <button
+            type="button"
+            class="focal-preview"
+            data-tooltip={$t.settings.background.focal_hint}
+            style="aspect-ratio: {mediaW} / {mediaH}"
+            on:click={onFocalClick}
+          >
+            {#if $bgMedia}
+              <img bind:this={mediaEl} src={$bgMedia.src} alt="" on:load={onMediaMeta} />
+            {/if}
+            <span
+              class="focal-marker"
+              style="left:{$bgMedia?.focalX ?? 50}%; top:{$bgMedia?.focalY ?? 50}%"
+            ></span>
+          </button>
+        </div>
       {/if}
     {:else}
-      <img id="bg-preview" src="assets/background/bg{id}.webp" alt="" loading="lazy" />
+      <div class="preview-container">
+        <button
+          type="button"
+          class="focal-preview"
+          data-tooltip={$t.settings.background.focal_hint}
+          style="aspect-ratio: {mediaW} / {mediaH}"
+          on:click={onFocalClick}
+        >
+          {#if $bgMedia}
+            <img bind:this={mediaEl} src={$bgMedia.src} alt="" on:load={onMediaMeta} />
+          {/if}
+          <span
+            class="focal-marker"
+            style="left:{$bgMedia?.focalX ?? 50}%; top:{$bgMedia?.focalY ?? 50}%"
+          ></span>
+        </button>
+      </div>
     {/if}
     <button on:click={nextBg}>
       <IconArrowRight size={20} />
     </button>
+  </div>
+
+  <div class="zoom-row" data-tooltip={$t.settings.background.zoom_hint}>
+    <span class="zoom-ico">−</span>
+    <input
+      class="zoom-slider"
+      type="range"
+      min={MIN_SCALE}
+      max={MAX_SCALE}
+      step="0.05"
+      value={$bgMedia?.scale ?? 1}
+      on:input={onZoom}
+      aria-label="Zoom background"
+    />
+    <span class="zoom-ico">+</span>
   </div>
 
   {#if isUploading}
@@ -527,42 +583,31 @@
     gap: 20px;
     justify-content: center;
   }
+
   .preview-container {
     position: relative;
     display: inline-block;
   }
 
-  #bg-preview {
-    width: 200px;
-    height: 120px;
-    border-radius: 7px;
-    margin: 0 10px;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-
-  .video-preview {
+  .focal-preview {
     position: relative;
-    width: 200px;
+    width: 220px;
     margin: 0 10px;
+    padding: 0;
+    border: none;
     border-radius: 7px;
     overflow: hidden;
     cursor: crosshair;
-    border: none;
-    padding: 0;
     background: #000;
     display: block;
   }
 
-  .video-preview video {
+  .focal-preview video,
+  .focal-preview img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #000;
   }
 
   .focal-marker {
@@ -606,16 +651,34 @@
     background-color: rgba(255, 0, 0, 1);
   }
 
-  button:not(.upload-btn):not(.video-preview):not(.delete-current-btn) {
+  button:not(.upload-btn):not(.focal-preview):not(.delete-current-btn) {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     color: white;
     overflow: hidden;
   }
-  button:not(.upload-btn):not(.video-preview):not(.delete-current-btn):hover {
+  button:not(.upload-btn):not(.focal-preview):not(.delete-current-btn):hover {
     backdrop-filter: blur(10px);
     background-color: rgba(0, 0, 0, 10%);
+  }
+
+  .zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .zoom-slider {
+    flex: 1;
+  }
+
+  .zoom-ico {
+    color: #fff;
+    opacity: 0.7;
+    width: 14px;
+    text-align: center;
   }
 
   .uploading-indicator {
@@ -645,14 +708,14 @@
     }
   }
 
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
   @media only screen and (max-width: 600px) {
-    #bg-preview {
+    .focal-preview {
       width: 90px;
-      height: 150px;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      background-size: cover;
-      background-position: center;
     }
   }
 </style>
