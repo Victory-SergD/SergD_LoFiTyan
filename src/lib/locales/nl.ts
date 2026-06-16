@@ -11,6 +11,7 @@ export const nl: Translations = {
             processing: 'Afbeeldingen verwerken...',
             focal_hint: 'Klik op het punt dat gecentreerd moet blijven bij bijsnijden naar uw scherm',
             zoom_hint: 'Zoom de achtergrond — hij vult altijd het volledige scherm',
+            skipped: 'Overgeslagen (geen afbeelding of te groot):',
         },
         volume: {
             title: 'Volume',

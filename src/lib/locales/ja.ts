@@ -11,6 +11,7 @@ export const ja: Translations = {
             processing: '画像を処理中...',
             focal_hint: '画面にクロップしたときに中心にしたい場所をクリック',
             zoom_hint: '背景をズーム — 常に画面の端まで表示されます',
+            skipped: 'スキップ（画像以外またはサイズ超過）:',
         },
         volume: {
             title: '音量',

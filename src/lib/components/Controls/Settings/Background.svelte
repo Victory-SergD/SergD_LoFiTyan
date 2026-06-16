@@ -37,6 +37,7 @@
   let allBackgrounds = [];
   let isUploading = false;
   let isTransitioning = false;
+  let uploadErrors: string[] = [];
 
   // unified preview state (works for both image and video)
   let mediaEl: HTMLVideoElement | HTMLImageElement | undefined;
@@ -201,13 +202,18 @@
     const files = target.files;
     if (!files || files.length === 0) return;
 
+    uploadErrors = [];
     isUploading = true;
 
     for (const file of Array.from(files)) {
-      if (!file.type.startsWith("image/")) continue;
+      if (!file.type.startsWith("image/")) {
+        uploadErrors = [...uploadErrors, file.name];
+        continue;
+      }
 
       if (file.size > MAX_FILE_MB * 1024 * 1024) {
         console.warn(`Skipping ${file.name}: exceeds ${MAX_FILE_MB} MB`);
+        uploadErrors = [...uploadErrors, file.name];
         continue;
       }
 
@@ -229,6 +235,7 @@
         selectCustomBackground(customBg);
       } catch (err) {
         console.error(`Failed to process ${file.name}:`, err);
+        uploadErrors = [...uploadErrors, file.name];
       }
     }
 
@@ -548,6 +555,10 @@
       <span>{$t.settings.background.processing}</span>
     </div>
   {/if}
+
+  {#if uploadErrors.length}
+    <div class="upload-errors">{$t.settings.background.skipped} {uploadErrors.join(", ")}</div>
+  {/if}
 </div>
 
 <style>
@@ -715,6 +726,12 @@
     100% {
       transform: rotate(360deg);
     }
+  }
+
+  .upload-errors {
+    margin-top: 8px;
+    color: #ff9a9a;
+    font-size: 0.8em;
   }
 
   @keyframes fadeIn {

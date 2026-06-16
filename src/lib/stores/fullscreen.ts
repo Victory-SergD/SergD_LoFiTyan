@@ -46,14 +46,14 @@ export async function initFullscreenSync(): Promise<() => void> {
     const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
     const win = getCurrentWebviewWindow();
     fullscreen.set(await win.isFullscreen());
-    const unlisten = await win.onResized(async () => {
-      try {
-        fullscreen.set(await win.isFullscreen());
-      } catch {
-        /* ignore */
-      }
+    let t: ReturnType<typeof setTimeout> | null = null;
+    const unlisten = await win.onResized(() => {
+      if (t) clearTimeout(t);
+      t = setTimeout(async () => {
+        try { fullscreen.set(await win.isFullscreen()); } catch { /* ignore */ }
+      }, 120);
     });
-    return unlisten;
+    return () => { if (t) clearTimeout(t); void unlisten(); };
   } catch {
     return () => {};
   }
