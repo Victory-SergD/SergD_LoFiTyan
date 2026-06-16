@@ -6,8 +6,10 @@ export const nl: Translations = {
         background: {
             title: 'Achtergrond',
             add_custom: 'Aangepaste afbeeldingen toevoegen',
+            add_video: 'Videoachtergrond toevoegen',
             delete_tooltip: 'Deze achtergrond verwijderen',
             processing: 'Afbeeldingen verwerken...',
+            focal_hint: 'Klik op het punt dat gecentreerd moet blijven bij bijsnijden naar uw scherm',
         },
         volume: {
             title: 'Volume',

@@ -4,8 +4,10 @@ export const en = {
         background: {
             title: 'Background',
             add_custom: 'Add Custom Images',
+            add_video: 'Add a video background',
             delete_tooltip: 'Delete this background',
             processing: 'Processing images...',
+            focal_hint: 'Click where to keep centered when cropped to your screen',
         },
         volume: {
             title: 'Volume',

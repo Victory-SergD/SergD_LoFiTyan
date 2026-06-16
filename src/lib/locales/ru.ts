@@ -6,8 +6,10 @@ export const ru: Translations = {
         background: {
             title: 'Фон',
             add_custom: 'Добавить свои изображения',
+            add_video: 'Добавить видео-фон',
             delete_tooltip: 'Удалить этот фон',
             processing: 'Обработка изображений...',
+            focal_hint: 'Кликни, где держать центр кадра при обрезке под экран',
         },
         volume: {
             title: 'Громкость',

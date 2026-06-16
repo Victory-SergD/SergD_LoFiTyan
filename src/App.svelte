@@ -15,6 +15,7 @@
   import { closePicker } from "./lib/stores/picker";
   import { isTypingTarget } from "./lib/utils/dom";
   import Canvas from "./lib/components/Canvas/index.svelte";
+  import { setVideoBg } from "./lib/stores/background";
   import Controls from "./lib/components/Controls/index.svelte";
   import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
   import TopBar from "./lib/components/TopBar/TopBar.svelte";
@@ -99,14 +100,25 @@
           import("./lib/localDB").then(async ({ default: localDB }) => {
             const saved = await localDB.getItem("custom-backgrounds");
             if (saved) {
-              const customs = JSON.parse(saved) as Array<{ id: string; dataUrl: string }>;
-              const match   = customs.find((b) => b.id === customBgId);
+              const customs = JSON.parse(saved) as Array<{
+                id: string;
+                dataUrl?: string;
+                kind?: string;
+                path?: string;
+                focalX?: number;
+                focalY?: number;
+              }>;
+              const match = customs.find((b) => b.id === customBgId);
               if (match) {
-                const img  = new Image();
-                img.onload = () => {
-                  bgEl.style.backgroundImage = `url('${match.dataUrl}')`;
-                };
-                img.src = match.dataUrl;
+                if (match.kind === "video" && match.path) {
+                  setVideoBg(match.path, match.focalX ?? 50, match.focalY ?? 50);
+                } else if (match.dataUrl) {
+                  const img  = new Image();
+                  img.onload = () => {
+                    bgEl.style.backgroundImage = `url('${match.dataUrl}')`;
+                  };
+                  img.src = match.dataUrl;
+                }
               }
             }
           });

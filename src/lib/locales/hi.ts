@@ -6,8 +6,10 @@ export const hi: Translations = {
         background: {
             title: 'पृष्ठभूमि',
             add_custom: 'कस्टम चित्र जोड़ें',
+            add_video: 'वीडियो पृष्ठभूमि जोड़ें',
             delete_tooltip: 'इस पृष्ठभूमि को हटाएं',
             processing: 'छवियों को प्रोसेस किया जा रहा है...',
+            focal_hint: 'वह स्थान क्लिक करें जहाँ स्क्रीन के अनुसार क्रॉप होने पर केंद्र रहे',
         },
         volume: {
             title: 'वॉल्यूम',

@@ -6,8 +6,10 @@ export const ja: Translations = {
         background: {
             title: '背景',
             add_custom: 'カスタム画像を追加',
+            add_video: '動画背景を追加',
             delete_tooltip: 'この背景を削除',
             processing: '画像を処理中...',
+            focal_hint: '画面にクロップしたときに中心にしたい場所をクリック',
         },
         volume: {
             title: '音量',

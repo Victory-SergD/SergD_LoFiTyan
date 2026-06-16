@@ -6,8 +6,10 @@ export const zh: Translations = {
         background: {
             title: '背景',
             add_custom: '添加自定义图片',
+            add_video: '添加视频背景',
             delete_tooltip: '删除此背景',
             processing: '正在处理图片...',
+            focal_hint: '点击要在裁剪时保持居中的位置',
         },
         volume: {
             title: '音量',

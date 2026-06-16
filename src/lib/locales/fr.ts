@@ -6,8 +6,10 @@ export const fr: Translations = {
         background: {
             title: 'Arrière-plan',
             add_custom: 'Ajouter des images personnalisées',
+            add_video: 'Ajouter une vidéo en arrière-plan',
             delete_tooltip: 'Supprimer cet arrière-plan',
             processing: 'Traitement des images...',
+            focal_hint: 'Cliquez sur le point à garder centré lors du recadrage à votre écran',
         },
         volume: {
             title: 'Volume',

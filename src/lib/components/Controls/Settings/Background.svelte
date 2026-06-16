@@ -4,11 +4,15 @@
     IconArrowRight,
     IconPlus,
     IconTrash,
+    IconMovie,
   } from "@tabler/icons-svelte";
   import { onMount, onDestroy } from "svelte";
+  import { open } from "@tauri-apps/plugin-dialog";
+  import { convertFileSrc } from "@tauri-apps/api/core";
   import localDB from "../../../localDB";
   import { t } from "../../../locales/store";
   import { isTypingTarget } from "../../../utils/dom";
+  import { videoBg, setVideoBg, setFocal, clearVideoBg } from "../../../stores/background";
 
   const MAX_DIMENSION = 1920;
   const WEBP_QUALITY  = 0.85;
@@ -23,6 +27,11 @@
   let allBackgrounds = [];
   let isUploading = false;
   let isTransitioning = false;
+
+  // video preview state
+  let previewEl: HTMLVideoElement | undefined;
+  let vidW = 16;
+  let vidH = 9;
 
   onMount(async () => {
     await loadCustomBackgrounds();
@@ -106,12 +115,24 @@
     }
 
     customBackgrounds.forEach((bg) => {
-      allBackgrounds.push({
-        id: bg.id,
-        type: "custom",
-        name: bg.name,
-        url: bg.dataUrl,
-      });
+      if (bg.kind === "video") {
+        allBackgrounds.push({
+          id: bg.id,
+          type: "custom",
+          kind: "video",
+          name: bg.name,
+          path: bg.path,
+          focalX: bg.focalX,
+          focalY: bg.focalY,
+        });
+      } else {
+        allBackgrounds.push({
+          id: bg.id,
+          type: "custom",
+          name: bg.name,
+          url: bg.dataUrl,
+        });
+      }
     });
   }
 
@@ -129,6 +150,7 @@
   }
 
   function deleteCustomBackground(bg: any) {
+    if (!bg) return;
     customBackgrounds = customBackgrounds.filter((b) => b.id !== bg.id);
     saveCustomBackgrounds();
     buildAllBackgrounds();
@@ -136,8 +158,18 @@
     window.dispatchEvent(new CustomEvent("backgroundsUpdated"));
 
     if (bgType === "custom" && customBgId === bg.id) {
+      if (bg.kind === "video") {
+        clearVideoBg();
+      }
       if (allBackgrounds.length > 0) {
-        applyBackground(allBackgrounds[0]);
+        const first = allBackgrounds[0];
+        if (first.kind === "video") {
+          const originalItem = customBackgrounds.find((b) => b.id === first.id);
+          if (originalItem) applyVideoItem(originalItem);
+          else applyBackground(allBackgrounds[0]);
+        } else {
+          applyBackground(allBackgrounds[0]);
+        }
       } else {
         localStorage.setItem("bg-type", "default");
         localStorage.removeItem("custom-bg-id");
@@ -187,6 +219,42 @@
       target.value = "";
   }
 
+  async function addVideo() {
+    let selected: string | string[] | null;
+    try {
+      selected = await open({
+        multiple: false,
+        filters: [{ name: "Video", extensions: ["mp4", "webm", "mov", "m4v"] }],
+      });
+    } catch {
+      return;
+    }
+    if (typeof selected !== "string") return;
+    const name = selected.split(/[/\\]/).pop() ?? "video";
+    const item = {
+      id: `video_${Date.now()}`,
+      name,
+      kind: "video" as const,
+      path: selected,
+      focalX: 50,
+      focalY: 50,
+    };
+    customBackgrounds.push(item);
+    saveCustomBackgrounds();
+    buildAllBackgrounds();
+    window.dispatchEvent(new CustomEvent("backgroundsUpdated"));
+    applyVideoItem(item);
+  }
+
+  function applyVideoItem(item: any) {
+    setVideoBg(item.path, item.focalX, item.focalY);
+    id = item.id;
+    bgType = "custom";
+    customBgId = item.id;
+    localStorage.setItem("bg-type", "custom");
+    localStorage.setItem("custom-bg-id", item.id);
+  }
+
   function applyCurrentBackground() {
     const bg = document.getElementById("bg");
     if (!bg) return;
@@ -194,7 +262,11 @@
     if (bgType === "custom" && customBgId) {
       const customBg = customBackgrounds.find((bg) => bg.id === customBgId);
       if (customBg) {
-        bg.style.backgroundImage = `url('${customBg.dataUrl}')`;
+        if (customBg.kind === "video") {
+          setVideoBg(customBg.path, customBg.focalX, customBg.focalY);
+        } else {
+          bg.style.backgroundImage = `url('${customBg.dataUrl}')`;
+        }
         return;
       } else {
         bgType = "default";
@@ -208,14 +280,27 @@
   function nextBg() {
     buildAllBackgrounds();
     const currentIndex = getCurrentIndex();
-    applyBackground(allBackgrounds[(currentIndex + 1) % allBackgrounds.length]);
+    const idx = (currentIndex + 1) % allBackgrounds.length;
+    const target = allBackgrounds[idx];
+    if (target.kind === "video") {
+      const originalItem = customBackgrounds.find((b) => b.id === target.id);
+      if (originalItem) applyVideoItem(originalItem);
+    } else {
+      applyBackground(target);
+    }
   }
 
   function prevBg() {
     buildAllBackgrounds();
     const currentIndex = getCurrentIndex();
     const prevIndex = currentIndex === 0 ? allBackgrounds.length - 1 : currentIndex - 1;
-    applyBackground(allBackgrounds[prevIndex]);
+    const target = allBackgrounds[prevIndex];
+    if (target.kind === "video") {
+      const originalItem = customBackgrounds.find((b) => b.id === target.id);
+      if (originalItem) applyVideoItem(originalItem);
+    } else {
+      applyBackground(target);
+    }
   }
 
   function getCurrentIndex(): number {
@@ -225,6 +310,8 @@
   }
 
   function applyBackground(background: any) {
+    clearVideoBg();
+
     const bg = document.getElementById("bg");
     if (!bg) return;
 
@@ -273,6 +360,28 @@
       prevBg();
     }
   };
+
+  function onPreviewMeta() {
+    if (previewEl) {
+      vidW = previewEl.videoWidth || 16;
+      vidH = previewEl.videoHeight || 9;
+    }
+  }
+
+  function onFocalClick(e: MouseEvent) {
+    const el = e.currentTarget as HTMLElement;
+    const r = el.getBoundingClientRect();
+    const fx = Math.max(0, Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)));
+    const fy = Math.max(0, Math.min(100, Math.round(((e.clientY - r.top) / r.height) * 100)));
+    const item = customBackgrounds.find((b) => b.id === customBgId);
+    if (item) {
+      item.focalX = fx;
+      item.focalY = fy;
+      saveCustomBackgrounds();
+    }
+    setFocal(fx, fy);
+    customBackgrounds = customBackgrounds; // trigger Svelte reactivity for the marker
+  }
 </script>
 
 <div>
@@ -286,6 +395,14 @@
     >
       <IconPlus size={16} />
     </label>
+    <button
+      class="upload-btn"
+      data-tooltip={$t.settings.background.add_video}
+      on:click={addVideo}
+      type="button"
+    >
+      <IconMovie size={16} />
+    </button>
     <input
       id="bg-upload"
       type="file"
@@ -308,7 +425,31 @@
       )}
       {#if currentBg}
         <div class="preview-container" class:transitioning={isTransitioning}>
-          <img id="bg-preview" src={currentBg.url} alt={currentBg.name} loading="lazy" />
+          {#if currentBg.kind === "video"}
+            {@const focalItem = customBackgrounds.find((b) => b.id === customBgId)}
+            <button
+              class="video-preview"
+              data-tooltip={$t.settings.background.focal_hint}
+              style="aspect-ratio: {vidW} / {vidH}"
+              on:click={onFocalClick}
+              type="button"
+            >
+              <video
+                bind:this={previewEl}
+                src={convertFileSrc(currentBg.path)}
+                on:loadedmetadata={onPreviewMeta}
+                autoplay
+                loop
+                muted
+                playsinline
+              ></video>
+              {#if focalItem}
+                <span class="focal-marker" style="left: {focalItem.focalX}%; top: {focalItem.focalY}%"></span>
+              {/if}
+            </button>
+          {:else}
+            <img id="bg-preview" src={currentBg.url} alt={currentBg.name} loading="lazy" />
+          {/if}
           {#if bgType === "custom" && customBgId}
             <button
               class="delete-current-btn"
@@ -400,6 +541,38 @@
     to   { opacity: 1; }
   }
 
+  .video-preview {
+    position: relative;
+    width: 200px;
+    margin: 0 10px;
+    border-radius: 7px;
+    overflow: hidden;
+    cursor: crosshair;
+    border: none;
+    padding: 0;
+    background: #000;
+    display: block;
+  }
+
+  .video-preview video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+  }
+
+  .focal-marker {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+  }
+
   .delete-current-btn {
     position: absolute;
     bottom: 18px;
@@ -430,14 +603,14 @@
     background-color: rgba(255, 0, 0, 1);
   }
 
-  button {
+  button:not(.upload-btn):not(.video-preview):not(.delete-current-btn) {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     color: white;
     overflow: hidden;
   }
-  button:hover {
+  button:not(.upload-btn):not(.video-preview):not(.delete-current-btn):hover {
     backdrop-filter: blur(10px);
     background-color: rgba(0, 0, 0, 10%);
   }
