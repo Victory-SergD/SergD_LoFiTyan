@@ -1,5 +1,6 @@
 import { writable, get } from "svelte/store";
 import { pickerOpen } from "./picker";
+import { settingsOpen, infoOpen } from "./ui";
 
 export const IMMERSION_IDLE_MS = 8000;
 
@@ -159,7 +160,7 @@ export function initIdleWatch(): () => void {
     // Only write on a REAL state change so a manual toggle isn't re-fired /
     // undone (e.g. an idle tick won't re-set immersive=true when already true).
     onIdle: () => {
-      if (get(pickerOpen)) return; // don't auto-hide while the station picker is open
+      if (get(pickerOpen) || get(settingsOpen) || get(infoOpen)) return; // don't auto-hide while the station picker/settings/info is open
       if (!get(immersive)) immersive.set(true);
     },
     onActive: () => {

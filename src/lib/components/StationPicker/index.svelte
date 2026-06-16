@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import {
     IconX,
     IconMusic,
@@ -22,6 +23,10 @@
   import type { Genre } from "../../stores/radio";
   import { pickerOpen, closePicker, pickerTab, pickerMoreGenre } from "../../stores/picker";
   import { t } from "../../locales/store";
+
+  onMount(() => {
+    if ($pickerTab === "More") void loadStations(GENRE_TAG[$pickerMoreGenre as Genre], 128);
+  });
 
   type Tab = Genre | "★" | "More";
 
@@ -51,7 +56,8 @@
 
 {#if $pickerOpen}
   <!-- Full-screen catcher: a click anywhere outside the sheet closes the picker. -->
-  <button class="picker-backdrop" on:click={closePicker} tabindex="-1" aria-hidden="true"></button>
+  <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+  <div class="picker-backdrop" on:click={closePicker}></div>
   <div class="picker glass">
     <div class="picker-head">
       <h3>{$t.picker.title}</h3>

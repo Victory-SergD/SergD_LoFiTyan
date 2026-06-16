@@ -6,11 +6,13 @@
 
   import { t, locale, setLocale } from "../../../locales/store";
   import { isTypingTarget } from "../../../utils/dom";
+  import { settingsOpen } from "../../../stores/ui";
 
   let isActive = false;
 
   function toggle() {
     isActive = !isActive;
+    settingsOpen.set(isActive);
     window.dispatchEvent(new CustomEvent("settings-open-changed", { detail: { isActive } }));
   }
 
@@ -19,6 +21,11 @@
     if (isTypingTarget(e)) return;
     if (e.key === "j") {
       toggle();
+    }
+    if (e.key === "Escape" && isActive) {
+      isActive = false;
+      settingsOpen.set(false);
+      window.dispatchEvent(new CustomEvent("settings-open-changed", { detail: { isActive: false } }));
     }
   }
 
@@ -33,6 +40,7 @@
       !event.target.closest("#settings-box")
     ) {
       isActive = false;
+      settingsOpen.set(false);
     }
   };
 

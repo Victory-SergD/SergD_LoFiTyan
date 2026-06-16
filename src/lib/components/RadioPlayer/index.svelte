@@ -17,6 +17,7 @@
     selectStation,
   } from "../../stores/radio";
   import { openPicker } from "../../stores/picker";
+  import { t } from "../../locales/store";
 
   function hideBrokenFavicon(e: Event) {
     (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -26,7 +27,7 @@
 <div class="radio-player">
   {#if $error}
     <!-- Playback error; let the user retry by re-selecting the current station. -->
-    <button class="station-name retry" on:click={() => { if ($current) selectStation($current); }} title="Повторить">
+    <button class="station-name retry" on:click={() => { if ($current) selectStation($current); }} title={$t.picker.retry}>
       ⚠ {$error} · ↻
     </button>
   {:else}

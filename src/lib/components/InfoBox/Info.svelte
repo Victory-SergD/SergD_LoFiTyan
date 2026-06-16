@@ -4,6 +4,7 @@
   import SocialLinks from "./SocialLinks.svelte";
   import { onMount } from "svelte";
   import { t } from "../../locales/store";
+  import { infoOpen } from "../../stores/ui";
 
   let visible = false;
 
@@ -13,6 +14,7 @@
 
   function toggleInfoBox() {
     visible = !visible;
+    infoOpen.set(visible);
   }
 
   // First time, show info box
@@ -40,10 +42,10 @@
         toggleInfoBox();
       }
     };
-    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("keydown", handleEscape);
     window.addEventListener("lofi-toggle-info", toggleInfoBox);
     return () => {
-      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("keydown", handleEscape);
       window.removeEventListener("lofi-toggle-info", toggleInfoBox);
     };
   });
