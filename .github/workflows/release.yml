@@ -1,9 +1,9 @@
-name: "publish"
+name: release
+
 on:
-  workflow_dispatch: # Manual trigger
   push:
-    branches:
-      - 'master'     # Push to master branch trigger
+    tags:
+      - 'v*' # Cut a release by pushing a version tag, e.g. v1.2.0
 
 jobs:
   publish-tauri:
@@ -13,9 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+          - platform: 'macos-latest' # Apple Silicon (M1 and above)
             args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
+          - platform: 'macos-latest' # Intel based macs
             args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
@@ -34,14 +34,16 @@ jobs:
 
       - name: setup node
         uses: actions/setup-node@v4
-      
+        with:
+          node-version: 20
+
       - name: install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable # Set this to dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
         with:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
@@ -52,16 +54,20 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
-        run: pnpm install --no-frozen-lockfile # change this to npm or pnpm depending on which one you use.
+        run: pnpm install --no-frozen-lockfile
 
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'LoFiTyan ${{ github.ref_name }}'
+          releaseBody: |
+            Download the installer for your OS from the assets below.
+            The macOS build is **unsigned** — see the README for first-launch steps.
+
+            Скачайте установщик для вашей ОС из ассетов ниже.
+            macOS-сборка **не подписана** — инструкция по первому запуску в README.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
