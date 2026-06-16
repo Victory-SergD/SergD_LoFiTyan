@@ -3,8 +3,9 @@
   import { onDestroy, onMount } from "svelte";
   import { volumes } from "../../../stores/volume";
   import { isTypingTarget } from "../../../utils/dom";
+  import { createLoop } from "../../../utils/audioLoop";
 
-  let storm = new Audio("assets/engine/effects/thunder.mp3");
+  const loop = createLoop("assets/engine/effects/thunder.mp3");
   let isStorming = false;
   let currentVolume = 1;
 
@@ -12,21 +13,20 @@
   const unsub = volumes.subscribe((v) => {
     const m = v.master ?? 1;
     currentVolume = (v.effects.thunder ?? 1) * m;
-    storm.volume = currentVolume;
+    loop.setVolume(currentVolume);
   });
   onDestroy(() => {
     unsub();
-    storm.pause(); // don't let a looping effect outlive the component (audio-13)
+    loop.stop(); // don't let a looping effect outlive the component (audio-13)
   });
 
   function toggleThunder() {
     if (isStorming) {
-      storm.pause();
+      loop.stop();
       isStorming = false;
     } else {
-      storm.loop = true;
-      storm.volume = currentVolume;
-      storm
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isStorming = true;
@@ -45,24 +45,23 @@
     }
   }
 
-  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // Global stop-all ('k'): stop this effect idempotently WITHOUT calling
   // toggleThunder(), so it can never accidentally start playing. (audio-7)
   function handleStopAll() {
     if (isStorming) {
-      storm.pause();
+      loop.stop();
       isStorming = false;
     }
   }
 
-  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // Auto-DJ explicit on/off: idempotently play/stop WITHOUT calling
   // toggleThunder(), so re-setting the same state can never double-trigger and
   // the DJ never silences a user-enabled effect by accident. (audio-10)
   function handleSet(e: Event) {
     const on = (e as CustomEvent).detail?.on;
     if (on && !isStorming) {
-      storm.loop = true;
-      storm.volume = currentVolume;
-      storm
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isStorming = true;
@@ -71,7 +70,7 @@
           isStorming = false;
         });
     } else if (!on && isStorming) {
-      storm.pause();
+      loop.stop();
       isStorming = false;
     }
   }

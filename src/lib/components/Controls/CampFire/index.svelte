@@ -3,8 +3,9 @@
   import { onDestroy, onMount } from "svelte";
   import { volumes } from "../../../stores/volume";
   import { isTypingTarget } from "../../../utils/dom";
+  import { createLoop } from "../../../utils/audioLoop";
 
-  let fire = new Audio("assets/engine/effects/fire.mp3");
+  const loop = createLoop("assets/engine/effects/fire.mp3");
   let isFire = false;
   let currentVolume = 1;
 
@@ -12,21 +13,20 @@
   const unsub = volumes.subscribe((v) => {
     const m = v.master ?? 1;
     currentVolume = (v.effects.campfire ?? 1) * m;
-    fire.volume = currentVolume;
+    loop.setVolume(currentVolume);
   });
   onDestroy(() => {
     unsub();
-    fire.pause(); // don't let a looping effect outlive the component (audio-13)
+    loop.stop(); // don't let a looping effect outlive the component (audio-13)
   });
 
   function toggleFire() {
     if (isFire) {
-      fire.pause();
+      loop.stop();
       isFire = false;
     } else {
-      fire.loop = true;
-      fire.volume = currentVolume;
-      fire
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isFire = true;
@@ -45,24 +45,23 @@
     }
   }
 
-  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // Global stop-all ('k'): stop this effect idempotently WITHOUT calling
   // toggleFire(), so it can never accidentally start playing. (audio-7)
   function handleStopAll() {
     if (isFire) {
-      fire.pause();
+      loop.stop();
       isFire = false;
     }
   }
 
-  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // Auto-DJ explicit on/off: idempotently play/stop WITHOUT calling
   // toggleFire(), so re-setting the same state can never double-trigger and
   // the DJ never silences a user-enabled effect by accident. (audio-10)
   function handleSet(e: Event) {
     const on = (e as CustomEvent).detail?.on;
     if (on && !isFire) {
-      fire.loop = true;
-      fire.volume = currentVolume;
-      fire
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isFire = true;
@@ -71,7 +70,7 @@
           isFire = false;
         });
     } else if (!on && isFire) {
-      fire.pause();
+      loop.stop();
       isFire = false;
     }
   }

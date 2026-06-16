@@ -3,8 +3,9 @@
   import { onDestroy, onMount } from "svelte";
   import { volumes } from "../../../stores/volume";
   import { isTypingTarget } from "../../../utils/dom";
+  import { createLoop } from "../../../utils/audioLoop";
 
-  let jungle = new Audio("assets/engine/effects/jungle.mp3");
+  const loop = createLoop("assets/engine/effects/jungle.mp3");
   let isActive = false;
   let currentVolume = 1;
 
@@ -12,21 +13,20 @@
   const unsub = volumes.subscribe((v) => {
     const m = v.master ?? 1;
     currentVolume = (v.effects.jungle ?? 1) * m;
-    jungle.volume = currentVolume;
+    loop.setVolume(currentVolume);
   });
   onDestroy(() => {
     unsub();
-    jungle.pause(); // don't let a looping effect outlive the component (audio-13)
+    loop.stop(); // don't let a looping effect outlive the component (audio-13)
   });
 
   function toggleJungle() {
     if (isActive) {
-      jungle.pause();
+      loop.stop();
       isActive = false;
     } else {
-      jungle.loop = true;
-      jungle.volume = currentVolume;
-      jungle
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isActive = true;
@@ -45,24 +45,23 @@
     }
   }
 
-  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // Global stop-all ('k'): stop this effect idempotently WITHOUT calling
   // toggleJungle(), so it can never accidentally start playing. (audio-7)
   function handleStopAll() {
     if (isActive) {
-      jungle.pause();
+      loop.stop();
       isActive = false;
     }
   }
 
-  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // Auto-DJ explicit on/off: idempotently play/stop WITHOUT calling
   // toggleJungle(), so re-setting the same state can never double-trigger and
   // the DJ never silences a user-enabled effect by accident. (audio-10)
   function handleSet(e: Event) {
     const on = (e as CustomEvent).detail?.on;
     if (on && !isActive) {
-      jungle.loop = true;
-      jungle.volume = currentVolume;
-      jungle
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isActive = true;
@@ -71,7 +70,7 @@
           isActive = false;
         });
     } else if (!on && isActive) {
-      jungle.pause();
+      loop.stop();
       isActive = false;
     }
   }

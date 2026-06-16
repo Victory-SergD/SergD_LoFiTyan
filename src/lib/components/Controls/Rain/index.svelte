@@ -4,8 +4,9 @@
   import { volumes } from "../../../stores/volume";
   import { rainActive } from "../../../stores/weather";
   import { isTypingTarget } from "../../../utils/dom";
+  import { createLoop } from "../../../utils/audioLoop";
 
-  let rain = new Audio("assets/engine/effects/rain.mp3");
+  const loop = createLoop("assets/engine/effects/rain.mp3");
   let isRaining = false;
   let currentVolume = 1;
 
@@ -18,21 +19,20 @@
   const unsub = volumes.subscribe((v) => {
     const m = v.master ?? 1;
     currentVolume = (v.effects.rain ?? 1) * m;
-    rain.volume = currentVolume;
+    loop.setVolume(currentVolume);
   });
   onDestroy(() => {
     unsub();
-    rain.pause(); // don't let a looping effect outlive the component (audio-13)
+    loop.stop(); // don't let a looping effect outlive the component (audio-13)
   });
 
   function toggleRain() {
     if (isRaining) {
-      rain.pause();
+      loop.stop();
       isRaining = false;
     } else {
-      rain.loop = true;
-      rain.volume = currentVolume;
-      rain
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isRaining = true;
@@ -43,24 +43,23 @@
     }
   }
 
-  // Global stop-all ('k'): pause this effect idempotently WITHOUT calling
+  // Global stop-all ('k'): stop this effect idempotently WITHOUT calling
   // toggleRain(), so it can never accidentally start playing. (audio-7)
   function handleStopAll() {
     if (isRaining) {
-      rain.pause();
+      loop.stop();
       isRaining = false;
     }
   }
 
-  // Auto-DJ explicit on/off: idempotently play/pause WITHOUT calling
+  // Auto-DJ explicit on/off: idempotently play/stop WITHOUT calling
   // toggleRain(), so re-setting the same state can never double-trigger and
   // the DJ never silences a user-enabled effect by accident. (audio-10)
   function handleSet(e: Event) {
     const on = (e as CustomEvent).detail?.on;
     if (on && !isRaining) {
-      rain.loop = true;
-      rain.volume = currentVolume;
-      rain
+      loop.setVolume(currentVolume);
+      loop
         .play()
         .then(() => {
           isRaining = true;
@@ -69,7 +68,7 @@
           isRaining = false;
         });
     } else if (!on && isRaining) {
-      rain.pause();
+      loop.stop();
       isRaining = false;
     }
   }
