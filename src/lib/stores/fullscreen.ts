@@ -37,3 +37,24 @@ export async function exitFullscreen(): Promise<void> {
     fullscreen.set(false);
   }
 }
+
+/** Keep the `fullscreen` store in sync with OS-driven changes (native exit
+ * gesture, etc.). Returns a cleanup fn. No-op outside Tauri. */
+export async function initFullscreenSync(): Promise<() => void> {
+  if (!inTauri()) return () => {};
+  try {
+    const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+    const win = getCurrentWebviewWindow();
+    fullscreen.set(await win.isFullscreen());
+    const unlisten = await win.onResized(async () => {
+      try {
+        fullscreen.set(await win.isFullscreen());
+      } catch {
+        /* ignore */
+      }
+    });
+    return unlisten;
+  } catch {
+    return () => {};
+  }
+}

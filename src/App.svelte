@@ -11,8 +11,9 @@
   import RadioPlayer from "./lib/components/RadioPlayer/index.svelte";
   import StationPicker from "./lib/components/StationPicker/index.svelte";
   import { initRadio, togglePlay, pause } from "./lib/stores/radio";
-  import { fullscreen, exitFullscreen } from "./lib/stores/fullscreen";
+  import { fullscreen, exitFullscreen, initFullscreenSync } from "./lib/stores/fullscreen";
   import { closePicker } from "./lib/stores/picker";
+  import { isTypingTarget } from "./lib/utils/dom";
   import Canvas from "./lib/components/Canvas/index.svelte";
   import Controls from "./lib/components/Controls/index.svelte";
   import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
@@ -23,11 +24,11 @@
   import Tooltip from "./lib/components/Tooltip.svelte";
 
   let cleanupIdle: (() => void) | null = null;
+  let cleanupFs: (() => void) | null = null;
 
   function onImmersionHotkey(e: KeyboardEvent) {
     // Ctrl/Cmd + I toggles immersive mode; ignore while typing in inputs
-    const t = e.target as HTMLElement | null;
-    if (t && t.closest("input, textarea, select")) return;
+    if (isTypingTarget(e)) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
       e.preventDefault();
       toggleImmersive();
@@ -40,19 +41,22 @@
   // are ignored while typing in inputs.)
   function onGlobalHotkey(e: KeyboardEvent) {
     const t = e.target as HTMLElement | null;
-    if (t && t.closest("input, textarea, select")) return;
+    // Escape must work regardless of focus (e.g. a focused volume slider).
+    if (e.key === "Escape") {
+      closePicker();
+      void exitFullscreen();
+      return;
+    }
+    if (isTypingTarget(e)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "k") {
       window.dispatchEvent(new CustomEvent("lofi-stop-all"));
     }
     if (e.code === "Space") {
+      // A focused button activates natively on Space; don't also toggle play.
+      if (t && t.closest("button")) return;
       e.preventDefault();
       togglePlay();
-    }
-    if (e.key === "Escape") {
-      // Esc closes picker and leaves fullscreen (no-op when windowed); Info closes via its own listener.
-      closePicker();
-      void exitFullscreen();
     }
   }
 
@@ -68,6 +72,7 @@
 
   onMount(() => {
     cleanupIdle = initIdleWatch();
+    void initFullscreenSync().then((fn) => (cleanupFs = fn));
     window.addEventListener("keydown", onImmersionHotkey);
     window.addEventListener("keydown", onGlobalHotkey);
     window.addEventListener("lofi-toggle-play", onTogglePlay);
@@ -115,6 +120,7 @@
 
   onDestroy(() => {
     if (cleanupIdle) cleanupIdle();
+    cleanupFs?.();
     window.removeEventListener("keydown", onImmersionHotkey);
     window.removeEventListener("keydown", onGlobalHotkey);
     window.removeEventListener("lofi-toggle-play", onTogglePlay);
@@ -152,8 +158,10 @@
     <!-- RadioPlayer lives inside `.chrome` so it auto-hides with the rest of the
          chrome in immersive mode, per the user's KEEP-immersion request. -->
     <RadioPlayer />
-    <StationPicker />
   </div>
+  <!-- StationPicker lives OUTSIDE .chrome so it is never hidden/disabled by the
+       auto-hide (immersive opacity:0 + pointer-events:none). -->
+  <StationPicker />
   <ContextMenu />
   <Tooltip />
 </main>
