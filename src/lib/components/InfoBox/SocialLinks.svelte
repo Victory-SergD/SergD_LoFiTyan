@@ -25,9 +25,9 @@
     <IconLink size={25} />
   </a> -->
   <a
-    href="https://github.com/meel-hd/lofi-engine"
+    href="https://github.com/Victory-SergD/SergD_LoFiTyan"
     target="_blank"
-    on:click={(e) => openExternal(e, "https://github.com/meel-hd/lofi-engine")}
+    on:click={(e) => openExternal(e, "https://github.com/Victory-SergD/SergD_LoFiTyan")}
   >
     <IconBrandGithub size={25} />
   </a>

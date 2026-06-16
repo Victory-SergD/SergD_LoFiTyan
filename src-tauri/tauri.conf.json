@@ -16,10 +16,10 @@
     ],
     "targets": "all"
   },
-  "productName": "Lofi Engine",
-  "mainBinaryName": "Lofi Engine",
+  "productName": "LoFiTyan",
+  "mainBinaryName": "LoFiTyan",
   "version": "1.2.0",
-  "identifier": "com.lofi-engine.dev",
+  "identifier": "io.github.victory-sergd.lofityan",
   "plugins": {},
   "app": {
     "withGlobalTauri": false,
@@ -27,7 +27,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "title": "Lofi Engine",
+        "title": "LoFiTyan",
         "width": 480,
         "height": 900,
         "minWidth": 360,

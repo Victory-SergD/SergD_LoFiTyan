@@ -6,7 +6,7 @@ pub fn run() {
         .run(tauri::generate_context!());
 
     if let Err(error) = result {
-        eprintln!("Lofi Engine failed to start: {error}");
+        eprintln!("LoFiTyan failed to start: {error}");
         std::process::exit(1);
     }
 }
