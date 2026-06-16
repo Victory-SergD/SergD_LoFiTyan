@@ -54,6 +54,14 @@ export const fr: Translations = {
             },
         },
     },
+    picker: {
+        title: 'Stations',
+        more: 'Plus',
+        favorites: 'Favoris',
+        empty_favorites: 'Aucun favori — appuie sur ☆ pour en ajouter',
+        loading: 'Chargement…',
+        retry: 'Appuie pour réessayer',
+    },
     context_menu: {
         play: 'Lire',
         pause: 'Pause',

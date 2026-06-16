@@ -52,6 +52,14 @@ export const en = {
             },
         },
     },
+    picker: {
+        title: 'Stations',
+        more: 'More',
+        favorites: 'Favorites',
+        empty_favorites: 'No favorites yet — tap ☆ to add',
+        loading: 'Loading…',
+        retry: 'Tap to retry',
+    },
     context_menu: {
         play: 'Play',
         pause: 'Pause',

@@ -54,6 +54,14 @@ export const zh: Translations = {
             },
         },
     },
+    picker: {
+        title: '电台列表',
+        more: '更多',
+        favorites: '收藏',
+        empty_favorites: '暂无收藏 — 点击 ☆ 添加',
+        loading: '加载中…',
+        retry: '点击重试',
+    },
     context_menu: {
         play: '播放',
         pause: '暂停',

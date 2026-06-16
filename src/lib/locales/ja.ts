@@ -54,6 +54,14 @@ export const ja: Translations = {
             },
         },
     },
+    picker: {
+        title: 'ステーション',
+        more: 'もっと',
+        favorites: 'お気に入り',
+        empty_favorites: 'まだありません — ☆ をタップして追加',
+        loading: '読み込み中…',
+        retry: 'タップして再試行',
+    },
     context_menu: {
         play: '再生',
         pause: '一時停止',

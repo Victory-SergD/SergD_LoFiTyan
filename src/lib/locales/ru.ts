@@ -54,6 +54,14 @@ export const ru: Translations = {
             },
         },
     },
+    picker: {
+        title: 'Станции',
+        more: 'Ещё',
+        favorites: 'Избранное',
+        empty_favorites: 'Пока пусто — нажми ☆, чтобы добавить',
+        loading: 'Загрузка…',
+        retry: 'Нажми, чтобы повторить',
+    },
     context_menu: {
         play: 'Воспроизвести',
         pause: 'Пауза',

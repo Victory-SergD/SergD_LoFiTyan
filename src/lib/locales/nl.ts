@@ -54,6 +54,14 @@ export const nl: Translations = {
             },
         },
     },
+    picker: {
+        title: 'Stations',
+        more: 'Meer',
+        favorites: 'Favorieten',
+        empty_favorites: 'Nog geen favorieten — tik op ☆ om toe te voegen',
+        loading: 'Laden…',
+        retry: 'Tik om opnieuw te proberen',
+    },
     context_menu: {
         play: 'Afspelen',
         pause: 'Pauzeren',

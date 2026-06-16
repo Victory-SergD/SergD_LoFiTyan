@@ -54,6 +54,14 @@ export const hi: Translations = {
             },
         },
     },
+    picker: {
+        title: 'स्टेशन',
+        more: 'और',
+        favorites: 'पसंदीदा',
+        empty_favorites: 'अभी कोई पसंदीदा नहीं — ☆ दबाएं',
+        loading: 'लोड हो रहा है…',
+        retry: 'दोबारा प्रयास करें',
+    },
     context_menu: {
         play: 'चलाएं',
         pause: 'रोकें',
