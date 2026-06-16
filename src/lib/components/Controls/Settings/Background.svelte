@@ -42,6 +42,7 @@
   let mediaEl: HTMLVideoElement | HTMLImageElement | undefined;
   let mediaW = 16;
   let mediaH = 9;
+  let metaReady = false;
 
   // reactive current background id for transform persistence
   $: curId = bgType === "custom" && customBgId ? customBgId : `default_${id}`;
@@ -149,8 +150,12 @@
     });
   }
 
-  function saveCustomBackgrounds() {
-    localDB.setItem("custom-backgrounds", JSON.stringify(customBackgrounds));
+  async function saveCustomBackgrounds() {
+    try {
+      await localDB.setItem("custom-backgrounds", JSON.stringify(customBackgrounds));
+    } catch (e) {
+      console.error("Failed to save backgrounds:", e);
+    }
   }
 
   function selectCustomBackground(bg: any) {
@@ -259,6 +264,7 @@
   }
 
   function applyVideoItem(item: any) {
+    metaReady = false;
     if (!hasTransform(item.id)) {
       saveTransform(item.id, { focalX: item.focalX ?? 50, focalY: item.focalY ?? 50, scale: 1 });
     }
@@ -325,6 +331,7 @@
   }
 
   function applyBackground(background: any) {
+    metaReady = false;
     isTransitioning = true;
 
     const img = new Image();
@@ -360,12 +367,13 @@
     localStorage.setItem("custom-bg-id", customBgId);
   };
 
-  const onBackgroundsUpdated = () => {
-    loadCustomBackgrounds();
+  const onBackgroundsUpdated = async () => {
+    await loadCustomBackgrounds();
     buildAllBackgrounds();
   };
 
   const onBgKeydown = (e: KeyboardEvent) => {
+    if ((e.target as HTMLElement)?.closest?.("#settings-box")) return;
     if (isTypingTarget(e)) return;
     if (e.key === "ArrowRight") {
       nextBg();
@@ -378,9 +386,11 @@
     if (!mediaEl) return;
     mediaW = (mediaEl as HTMLVideoElement).videoWidth || (mediaEl as HTMLImageElement).naturalWidth || 16;
     mediaH = (mediaEl as HTMLVideoElement).videoHeight || (mediaEl as HTMLImageElement).naturalHeight || 9;
+    metaReady = true;
   }
 
   function onFocalClick(e: MouseEvent) {
+    if (!metaReady) return;
     const el = e.currentTarget as HTMLElement;
     const r = el.getBoundingClientRect();
     const fx = Math.max(0, Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)));
@@ -449,8 +459,7 @@
                 bind:this={mediaEl}
                 src={$bgMedia.src}
                 on:loadedmetadata={onMediaMeta}
-                autoplay
-                loop
+                preload="metadata"
                 muted
                 playsinline
               ></video>

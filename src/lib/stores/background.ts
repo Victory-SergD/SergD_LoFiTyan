@@ -8,12 +8,17 @@ export interface BgMedia { kind: BgKind; src: string; focalX: number; focalY: nu
  * convertFileSrc by the caller). */
 export const bgMedia = writable<BgMedia | null>(null);
 
+/** True when the current background video has failed to load. */
+export const bgMediaError = writable<boolean>(false);
+export function setBgError(): void { bgMediaError.set(true); }
+
 export const MIN_SCALE = 1;
 export const MAX_SCALE = 3;
 const clampPct = (n: number) => Math.max(0, Math.min(100, n));
 const clampScale = (n: number) => Math.max(MIN_SCALE, Math.min(MAX_SCALE, n));
 
 export function setBgMedia(kind: BgKind, src: string, focalX = 50, focalY = 50, scale = 1): void {
+  bgMediaError.set(false);
   bgMedia.set({ kind, src, focalX: clampPct(focalX), focalY: clampPct(focalY), scale: clampScale(scale) });
 }
 export function setFocal(focalX: number, focalY: number): void {

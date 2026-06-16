@@ -76,4 +76,7 @@ export const zh: Translations = {
         reload: '重新加载',
         about: '关于',
     },
+    canvas: {
+        video_unavailable: '视频不可用 — 请尝试其他文件',
+    },
 };

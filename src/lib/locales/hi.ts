@@ -76,4 +76,7 @@ export const hi: Translations = {
         reload: 'रीलोड',
         about: 'के बारे में',
     },
+    canvas: {
+        video_unavailable: 'वीडियो उपलब्ध नहीं — दूसरी फ़ाइल चुनें',
+    },
 };

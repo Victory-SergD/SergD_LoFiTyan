@@ -76,4 +76,7 @@ export const fr: Translations = {
         reload: 'Recharger',
         about: 'À propos',
     },
+    canvas: {
+        video_unavailable: 'Vidéo indisponible — essaie un autre fichier',
+    },
 };

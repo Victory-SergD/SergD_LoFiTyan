@@ -74,4 +74,7 @@ export const en = {
         reload: 'Reload',
         about: 'About',
     },
+    canvas: {
+        video_unavailable: 'Video unavailable — try another file',
+    },
 };

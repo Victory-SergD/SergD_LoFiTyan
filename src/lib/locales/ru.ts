@@ -76,4 +76,7 @@ export const ru: Translations = {
         reload: 'Перезагрузить',
         about: 'О программе',
     },
+    canvas: {
+        video_unavailable: 'Видео недоступно — выбери другой файл',
+    },
 };

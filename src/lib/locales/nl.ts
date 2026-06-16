@@ -76,4 +76,7 @@ export const nl: Translations = {
         reload: 'Herladen',
         about: 'Over',
     },
+    canvas: {
+        video_unavailable: 'Video niet beschikbaar — kies een ander bestand',
+    },
 };

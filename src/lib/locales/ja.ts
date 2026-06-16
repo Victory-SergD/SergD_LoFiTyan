@@ -76,4 +76,7 @@ export const ja: Translations = {
         reload: 'リロード',
         about: 'について',
     },
+    canvas: {
+        video_unavailable: '動画を読み込めません — 別のファイルを選んでください',
+    },
 };
