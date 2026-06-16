@@ -9,8 +9,10 @@
     resumeIdleWatch,
   } from "./lib/stores/immersion";
   import RadioPlayer from "./lib/components/RadioPlayer/index.svelte";
-  import { loadStations, togglePlay, pause } from "./lib/stores/radio";
+  import StationPicker from "./lib/components/StationPicker/index.svelte";
+  import { initRadio, togglePlay, pause } from "./lib/stores/radio";
   import { fullscreen, exitFullscreen } from "./lib/stores/fullscreen";
+  import { closePicker } from "./lib/stores/picker";
   import Canvas from "./lib/components/Canvas/index.svelte";
   import Controls from "./lib/components/Controls/index.svelte";
   import RainAnimation from "./lib/components/Controls/Rain/RainAnimation.svelte";
@@ -48,7 +50,8 @@
       togglePlay();
     }
     if (e.key === "Escape") {
-      // Esc leaves fullscreen (no-op when windowed); Info closes via its own listener.
+      // Esc closes picker and leaves fullscreen (no-op when windowed); Info closes via its own listener.
+      closePicker();
       void exitFullscreen();
     }
   }
@@ -70,8 +73,7 @@
     window.addEventListener("lofi-toggle-play", onTogglePlay);
     window.addEventListener("lofi-stop-all", onStopAll);
 
-    // Load lofi stations so the RadioPlayer is ready to play.
-    void loadStations("lofi");
+    initRadio();
 
     // Initialize direction
     document.documentElement.dir = $dir;
@@ -150,6 +152,7 @@
     <!-- RadioPlayer lives inside `.chrome` so it auto-hides with the rest of the
          chrome in immersive mode, per the user's KEEP-immersion request. -->
     <RadioPlayer />
+    <StationPicker />
   </div>
   <ContextMenu />
   <Tooltip />

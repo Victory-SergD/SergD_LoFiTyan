@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    IconList,
     IconPlayerPauseFilled,
     IconPlayerPlayFilled,
     IconPlayerTrackNextFilled,
@@ -16,6 +17,7 @@
     playPrev,
     loadStations,
   } from "../../stores/radio";
+  import { openPicker } from "../../stores/picker";
 </script>
 
 <div class="radio-player">
@@ -25,7 +27,10 @@
       ⚠ {$error} · ↻
     </button>
   {:else}
-    <p class="station-name" title={$current?.name ?? ""}>
+    <button class="station-name open" on:click={openPicker} title={$current?.name ?? "Stations"}>
+      {#if $current?.favicon && $current.favicon.startsWith("https")}
+        <img class="np-fav" src={$current.favicon} alt="" />
+      {/if}
       {#if $loading}
         <span class="dot-spin" aria-hidden="true"></span>
       {:else if $buffering}
@@ -33,9 +38,12 @@
       {:else}
         {$current?.name ?? "…"}
       {/if}
-    </p>
+    </button>
   {/if}
   <div class="controls">
+    <button class="nav-button glass" on:click={openPicker} aria-label="Stations">
+      <IconList size={18} />
+    </button>
     <button class="nav-button glass" on:click={playPrev} aria-label="Previous station">
       <IconPlayerTrackPrevFilled size={20} />
     </button>
@@ -91,6 +99,21 @@
   }
   button.station-name.retry:hover {
     background: rgba(0, 0, 0, 0.45);
+  }
+
+  button.station-name.open {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .np-fav {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    object-fit: cover;
   }
 
   .controls {
