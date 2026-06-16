@@ -3,6 +3,7 @@ import type { Translations } from './types';
 export const ru: Translations = {
     settings: {
         title: 'Настройки',
+        author: 'Автор',
         background: {
             title: 'Фон',
             add_custom: 'Добавить свои изображения',

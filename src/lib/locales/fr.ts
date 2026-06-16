@@ -3,6 +3,7 @@ import type { Translations } from './types';
 export const fr: Translations = {
     settings: {
         title: 'Paramètres',
+        author: 'Auteur',
         background: {
             title: 'Arrière-plan',
             add_custom: 'Ajouter des images personnalisées',

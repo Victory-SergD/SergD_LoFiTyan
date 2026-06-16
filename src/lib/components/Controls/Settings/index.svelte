@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { IconSettings } from "@tabler/icons-svelte";
+  import { IconSettings, IconBrandGithub, IconBrandTelegram } from "@tabler/icons-svelte";
+  import { open as openExternal } from "@tauri-apps/plugin-shell";
   import { onMount } from "svelte";
   import Background from "./Background.svelte";
   import Volume from "./Volume.svelte";
@@ -94,6 +95,25 @@
             {/each}
           </div>
         </div>
+        <div class="section author-section">
+          <span class="author-label">{$t.settings.author}: SergD</span>
+          <div class="author-links">
+            <button
+              type="button"
+              data-tooltip="GitHub"
+              on:click={() => void openExternal("https://github.com/Victory-SergD/SergD_LoFiTyan")}
+            >
+              <IconBrandGithub size={18} />
+            </button>
+            <button
+              type="button"
+              data-tooltip="Telegram: @sergei_dyshkant"
+              on:click={() => void openExternal("https://t.me/sergei_dyshkant")}
+            >
+              <IconBrandTelegram size={18} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   {/if}
@@ -145,6 +165,38 @@
     margin: 0 0 10px 0;
     font-size: 1em;
     opacity: 0.9;
+  }
+
+  .author-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 14px;
+  }
+  .author-label {
+    font-size: 0.85em;
+    opacity: 0.8;
+  }
+  .author-links {
+    display: flex;
+    gap: 8px;
+  }
+  .author-links button {
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+    border-radius: 8px;
+    padding: 5px;
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .author-links button:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 
   @keyframes show {

@@ -3,6 +3,7 @@ import type { Translations } from './types';
 export const hi: Translations = {
     settings: {
         title: 'सेटिंग्स',
+        author: 'लेखक',
         background: {
             title: 'पृष्ठभूमि',
             add_custom: 'कस्टम चित्र जोड़ें',

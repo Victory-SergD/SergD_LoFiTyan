@@ -3,6 +3,7 @@ import type { Translations } from './types';
 export const zh: Translations = {
     settings: {
         title: '设置',
+        author: '作者',
         background: {
             title: '背景',
             add_custom: '添加自定义图片',

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     IconBrandGithub,
+    IconBrandTelegram,
     // IconBrandInstagram,
     // IconBrandPatreon,
     // IconBrandTwitter,
@@ -15,21 +16,20 @@
 </script>
 
 <div class="social-links">
-  <!-- <a href="https://twitter.com" target="_blank">
-    <IconBrandTwitter size={25} />
-  </a>
-  <a href="https://patreon.com" target="_blank">
-    <IconBrandPatreon size={25} />
-  </a>
-  <a href="https://LofiEngine.com" target="_blank">
-    <IconLink size={25} />
-  </a> -->
   <a
     href="https://github.com/Victory-SergD/SergD_LoFiTyan"
     target="_blank"
     on:click={(e) => openExternal(e, "https://github.com/Victory-SergD/SergD_LoFiTyan")}
   >
     <IconBrandGithub size={25} />
+  </a>
+  <a
+    href="https://t.me/sergei_dyshkant"
+    target="_blank"
+    data-tooltip="Telegram: @sergei_dyshkant"
+    on:click={(e) => openExternal(e, "https://t.me/sergei_dyshkant")}
+  >
+    <IconBrandTelegram size={25} />
   </a>
 </div>
 

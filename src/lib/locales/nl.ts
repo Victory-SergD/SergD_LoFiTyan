@@ -3,6 +3,7 @@ import type { Translations } from './types';
 export const nl: Translations = {
     settings: {
         title: 'Instellingen',
+        author: 'Auteur',
         background: {
             title: 'Achtergrond',
             add_custom: 'Aangepaste afbeeldingen toevoegen',

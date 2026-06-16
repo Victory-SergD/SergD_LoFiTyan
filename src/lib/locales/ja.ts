@@ -3,6 +3,7 @@ import type { Translations } from './types';
 export const ja: Translations = {
     settings: {
         title: '設定',
+        author: '作者',
         background: {
             title: '背景',
             add_custom: 'カスタム画像を追加',

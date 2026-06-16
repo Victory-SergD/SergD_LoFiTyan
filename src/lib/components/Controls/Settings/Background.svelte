@@ -5,7 +5,6 @@
     IconPhoto,
     IconTrash,
     IconMovie,
-    IconExternalLink,
   } from "@tabler/icons-svelte";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/plugin-dialog";
@@ -574,7 +573,7 @@
         data-tooltip="Lofi Girl · lofigirl.com"
         on:click={() => void openExternal("https://lofigirl.com/generator")}
       >
-        <IconExternalLink size={14} />
+        <img class="source-ico" src="assets/sources/lofigirl.png" alt="" />
         <span>Lofi Girl</span>
       </button>
       <button
@@ -583,7 +582,7 @@
         data-tooltip="MotionBGs · motionbgs.com"
         on:click={() => void openExternal("https://motionbgs.com/search?q=Lofi+Girl")}
       >
-        <IconExternalLink size={14} />
+        <img class="source-ico" src="assets/sources/motionbgs.png" alt="" />
         <span>MotionBGs</span>
       </button>
       <button
@@ -592,7 +591,7 @@
         data-tooltip="MoeWalls · moewalls.com"
         on:click={() => void openExternal("https://moewalls.com/category/lifestyle/")}
       >
-        <IconExternalLink size={14} />
+        <img class="source-ico" src="assets/sources/moewalls.png" alt="" />
         <span>MoeWalls</span>
       </button>
     </div>
@@ -821,5 +820,12 @@
   }
   .bg-sources-links button:hover {
     background-color: rgba(255, 255, 255, 0.2);
+  }
+  .source-ico {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: block;
+    flex-shrink: 0;
   }
 </style>

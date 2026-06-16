@@ -1,6 +1,7 @@
 export const en = {
     settings: {
         title: 'Settings',
+        author: 'Author',
         background: {
             title: 'Background',
             add_custom: 'Add Custom Images',
