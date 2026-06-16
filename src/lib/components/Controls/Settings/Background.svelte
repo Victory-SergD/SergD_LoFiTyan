@@ -573,8 +573,7 @@
         data-tooltip="Lofi Girl · lofigirl.com"
         on:click={() => void openExternal("https://lofigirl.com/generator")}
       >
-        <img class="source-ico" src="assets/sources/lofigirl.png" alt="" />
-        <span>Lofi Girl</span>
+        <img src="assets/sources/lofigirl.png" alt="Lofi Girl" />
       </button>
       <button
         type="button"
@@ -582,8 +581,7 @@
         data-tooltip="MotionBGs · motionbgs.com"
         on:click={() => void openExternal("https://motionbgs.com/search?q=Lofi+Girl")}
       >
-        <img class="source-ico" src="assets/sources/motionbgs.png" alt="" />
-        <span>MotionBGs</span>
+        <img src="assets/sources/motionbgs.png" alt="MotionBGs" />
       </button>
       <button
         type="button"
@@ -591,8 +589,7 @@
         data-tooltip="MoeWalls · moewalls.com"
         on:click={() => void openExternal("https://moewalls.com/category/lifestyle/")}
       >
-        <img class="source-ico" src="assets/sources/moewalls.png" alt="" />
-        <span>MoeWalls</span>
+        <img src="assets/sources/moewalls.png" alt="MoeWalls" />
       </button>
     </div>
   </div>
@@ -801,31 +798,27 @@
   }
   .bg-sources-links {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px;
   }
   .bg-sources-links button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    padding: 5px 10px;
-    font-size: 0.82em;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    width: 40px;
+    height: 40px;
+    padding: 0;
     border: none;
-    border-radius: 6px;
+    border-radius: 50%;
+    overflow: hidden;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    background: transparent;
+    display: inline-flex;
+    transition: transform 0.15s ease;
   }
   .bg-sources-links button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.08);
   }
-  .source-ico {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
+  .bg-sources-links button img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
-    flex-shrink: 0;
   }
 </style>

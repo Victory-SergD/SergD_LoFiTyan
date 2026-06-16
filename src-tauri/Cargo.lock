@@ -3,8 +3,8 @@
 version = 4
 
 [[package]]
-name = "LofiEngine"
-version = "1.2.0"
+name = "LoFiTyan"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde_json",
