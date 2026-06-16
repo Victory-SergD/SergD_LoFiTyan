@@ -56,3 +56,14 @@ Fix NOW before closing Phase 2 (1 blocker + 7 majors): (1) the picker ghost-over
   `src/lib/components/StationPicker/index.svelte:84 + src/lib/components/RadioPlayer/index.svelte:31` — _fix:_ Change both guards to .startsWith('https://') so favicons like 'httpsevil.com/x.png' fall back to the music-note icon.
 - **[NIT]** Global hotkey input guard uses .closest() instead of isTypingTarget() — misses contentEditable  
   `src/App.svelte:30,43` — _fix:_ Import and use isTypingTarget(e) from ./lib/utils/dom in both handlers (preserving the modifier-key early-return logic) for consistency with the five effect components.
+
+---
+
+## ✅ Resolution (2026-06-16)
+
+All confirmed issues fixed on branch `fix-phase2-audit` (4 grouped subagent passes A/B/C1/C2 + adversarial-verified):
+- **Blocker** (picker ghost) — `StationPicker` moved OUT of `.chrome` + immersion `onIdle` bails while `pickerOpen`.
+- **7 majors** — ContextMenu uses `$isPlaying`; Background listeners moved to onMount/onDestroy; immersion `toggleImmersive` resume()+reset(); fullscreen `initFullscreenSync()` tracks OS; Space skips focused buttons; `loadStations` sequence guard; re-selecting current station now restarts.
+- **Minors/nits** — Escape works under focus; initRadio https check; "More" empty state; favicon `https://` guard + on:error fallback; backdrop a11y; effect-button aria; unique slider ids; persisted picker tab; live Ctrl/Cmd+R reload; honest Esc label.
+
+Verified: **71 unit tests, 0 type errors, 0 a11y warnings, build OK**, and a full browser smoke (picker open/close/select/tab-persist/favorites/More/backdrop — all pass, zero JS exceptions). **Phase 2 closed.**
