@@ -47,6 +47,11 @@
       void exitFullscreen();
       return;
     }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {
+      e.preventDefault();
+      window.location.reload();
+      return;
+    }
     if (isTypingTarget(e)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "k") {

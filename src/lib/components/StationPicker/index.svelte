@@ -20,26 +20,28 @@
     loadStations,
   } from "../../stores/radio";
   import type { Genre } from "../../stores/radio";
-  import { pickerOpen, closePicker } from "../../stores/picker";
+  import { pickerOpen, closePicker, pickerTab, pickerMoreGenre } from "../../stores/picker";
   import { t } from "../../locales/store";
 
   type Tab = Genre | "★" | "More";
-  let tab: Tab = "Lo-Fi";
-  let moreGenre: Genre = "Lo-Fi";
 
   // Reactive favorite-id set so the ★ toggles update live.
   $: favIds = new Set($favorites.map((f) => f.id));
 
   $: rows =
-    tab === "★" ? $favorites : tab === "More" ? $stations : SEED[tab as Genre];
+    $pickerTab === "★" ? $favorites : $pickerTab === "More" ? $stations : SEED[$pickerTab as Genre];
 
   function pickTab(next: Tab) {
-    tab = next;
-    if (next === "More") void loadStations(GENRE_TAG[moreGenre], 128);
+    pickerTab.set(next);
+    if (next === "More") void loadStations(GENRE_TAG[$pickerMoreGenre as Genre], 128);
   }
   function pickMoreGenre(g: Genre) {
-    moreGenre = g;
+    pickerMoreGenre.set(g);
     void loadStations(GENRE_TAG[g], 128);
+  }
+
+  function retryMore() {
+    void loadStations(GENRE_TAG[$pickerMoreGenre as Genre], 128);
   }
 
   function hideBrokenFavicon(e: Event) {
@@ -60,26 +62,28 @@
 
     <div class="tabs">
       {#each GENRES as g}
-        <button class:active={tab === g} on:click={() => pickTab(g)}>{g}</button>
+        <button class:active={$pickerTab === g} on:click={() => pickTab(g)}>{g}</button>
       {/each}
-      <button class:active={tab === "★"} on:click={() => pickTab("★")}>★ {$t.picker.favorites}</button>
-      <button class:active={tab === "More"} on:click={() => pickTab("More")}>{$t.picker.more}</button>
+      <button class:active={$pickerTab === "★"} on:click={() => pickTab("★")}>★ {$t.picker.favorites}</button>
+      <button class:active={$pickerTab === "More"} on:click={() => pickTab("More")}>{$t.picker.more}</button>
     </div>
 
-    {#if tab === "More"}
+    {#if $pickerTab === "More"}
       <div class="subtabs">
         {#each GENRES as g}
-          <button class:active={moreGenre === g} on:click={() => pickMoreGenre(g)}>{g}</button>
+          <button class:active={$pickerMoreGenre === g} on:click={() => pickMoreGenre(g)}>{g}</button>
         {/each}
       </div>
     {/if}
 
     <div class="list">
-      {#if tab === "More" && $listLoading}
+      {#if $pickerTab === "More" && $listLoading}
         <p class="hint">{$t.picker.loading}</p>
-      {:else if tab === "More" && $listError}
-        <button class="hint retry" on:click={() => loadStations(GENRE_TAG[moreGenre], 128)}>⚠ {$t.picker.retry}</button>
-      {:else if tab === "★" && rows.length === 0}
+      {:else if $pickerTab === "More" && $listError}
+        <button class="hint retry" on:click={retryMore}>⚠ {$t.picker.retry}</button>
+      {:else if $pickerTab === "More" && rows.length === 0}
+        <p class="hint">{$t.picker.empty_results}</p>
+      {:else if $pickerTab === "★" && rows.length === 0}
         <p class="hint">{$t.picker.empty_favorites}</p>
       {:else}
         {#each rows as s (s.id)}

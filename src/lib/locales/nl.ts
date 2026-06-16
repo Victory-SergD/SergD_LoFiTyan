@@ -33,7 +33,7 @@ export const nl: Translations = {
             title: 'Sneltoetsen',
             general: {
                 title: 'Algemeen',
-                esc: 'Dit venster verbergen',
+                esc: 'Paneel sluiten / volledig scherm verlaten',
                 j: 'Open/sluit instellingen',
                 immersive: 'Ruime modus wisselen',
                 next_bg: 'Volgende achtergrondafbeelding',
@@ -59,6 +59,7 @@ export const nl: Translations = {
         more: 'Meer',
         favorites: 'Favorieten',
         empty_favorites: 'Nog geen favorieten — tik op ☆ om toe te voegen',
+        empty_results: 'Geen stations gevonden',
         loading: 'Laden…',
         retry: 'Tik om opnieuw te proberen',
     },

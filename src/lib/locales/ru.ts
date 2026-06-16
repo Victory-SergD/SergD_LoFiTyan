@@ -33,7 +33,7 @@ export const ru: Translations = {
             title: 'Горячие клавиши',
             general: {
                 title: 'Общие',
-                esc: 'Скрыть это окно',
+                esc: 'Закрыть панель / выйти из полноэкранного',
                 j: 'Открыть / закрыть настройки',
                 immersive: 'Просторный режим',
                 next_bg: 'Следующее фоновое изображение',
@@ -59,6 +59,7 @@ export const ru: Translations = {
         more: 'Ещё',
         favorites: 'Избранное',
         empty_favorites: 'Пока пусто — нажми ☆, чтобы добавить',
+        empty_results: 'Станции не найдены',
         loading: 'Загрузка…',
         retry: 'Нажми, чтобы повторить',
     },

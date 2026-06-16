@@ -33,7 +33,8 @@
         <h5>{$t.settings.volume.rain}</h5>
         <p>{Math.round(rainVolume * 100)}</p>
         <input
-            id="volume-slider"
+            id="vol-rain"
+            class="volume-slider"
             type="range"
             value={rainVolume}
             min="0.01"
@@ -46,7 +47,8 @@
         <h5>{$t.settings.volume.thunder}</h5>
         <p>{Math.round(thunderVolume * 100)}</p>
         <input
-            id="volume-slider"
+            id="vol-thunder"
+            class="volume-slider"
             type="range"
             value={thunderVolume}
             min="0.01"
@@ -59,7 +61,8 @@
         <h5>{$t.settings.volume.jungle}</h5>
         <p>{Math.round(jungleVolume * 100)}</p>
         <input
-            id="volume-slider"
+            id="vol-jungle"
+            class="volume-slider"
             type="range"
             value={jungleVolume}
             min="0.01"
@@ -72,7 +75,8 @@
         <h5>{$t.settings.volume.campfire}</h5>
         <p>{Math.round(campfireVolume * 100)}</p>
         <input
-            id="volume-slider"
+            id="vol-campfire"
+            class="volume-slider"
             type="range"
             value={campfireVolume}
             min="0.01"
@@ -85,7 +89,8 @@
         <h5>{$t.settings.volume.main_track}</h5>
         <p>{Math.round(mainTrackVolume * 100)}</p>
         <input
-            id="volume-slider"
+            id="vol-main"
+            class="volume-slider"
             type="range"
             value={mainTrackVolume}
             min="0.01"
@@ -106,7 +111,7 @@
         font-size: 12px;
         margin-right: 7%;
     }
-    #volume-slider {
+    .volume-slider {
         width: 90%;
         margin-left: 10px;
     }

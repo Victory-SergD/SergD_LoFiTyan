@@ -96,6 +96,8 @@
         background-color: ${isActive ? "white" : "transparent"};
         `}
   on:click={toggleJungle}
+  aria-label="Toggle nature sounds"
+  aria-pressed={isActive}
 >
   <IconTrees size={25} color={isActive ? "black" : "white"} />
 </button>

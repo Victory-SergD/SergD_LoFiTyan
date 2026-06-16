@@ -33,7 +33,7 @@ export const fr: Translations = {
             title: 'Raccourcis',
             general: {
                 title: 'Général',
-                esc: 'Masquer cette fenêtre',
+                esc: 'Fermer le panneau / quitter le plein écran',
                 j: 'Ouvrir/fermer les paramètres',
                 immersive: 'Basculer le mode spacieux',
                 next_bg: "Image d'arrière-plan suivante",
@@ -59,6 +59,7 @@ export const fr: Translations = {
         more: 'Plus',
         favorites: 'Favoris',
         empty_favorites: 'Aucun favori — appuie sur ☆ pour en ajouter',
+        empty_results: 'Aucune station trouvée',
         loading: 'Chargement…',
         retry: 'Appuie pour réessayer',
     },

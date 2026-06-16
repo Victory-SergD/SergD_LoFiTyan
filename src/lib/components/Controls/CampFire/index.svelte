@@ -96,6 +96,8 @@
         background-color: ${isFire ? "white" : "transparent"};
         `}
   on:click={toggleFire}
+  aria-label="Toggle campfire"
+  aria-pressed={isFire}
 >
   <IconCampfire size={25} color={isFire ? "black" : "white"} />
 </button>

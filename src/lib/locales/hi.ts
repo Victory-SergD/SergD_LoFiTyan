@@ -33,7 +33,7 @@ export const hi: Translations = {
             title: 'शॉर्टकट',
             general: {
                 title: 'सामान्य',
-                esc: 'यह विंडो छिपाएं',
+                esc: 'पैनल बंद करें / फ़ुलस्क्रीन से बाहर निकलें',
                 j: 'सेटिंग्स खोलें/बंद करें',
                 immersive: 'विशाल मोड टॉगल करें',
                 next_bg: 'अगली पृष्ठभूमि छवि',
@@ -59,6 +59,7 @@ export const hi: Translations = {
         more: 'और',
         favorites: 'पसंदीदा',
         empty_favorites: 'अभी कोई पसंदीदा नहीं — ☆ दबाएं',
+        empty_results: 'कोई स्टेशन नहीं मिला',
         loading: 'लोड हो रहा है…',
         retry: 'दोबारा प्रयास करें',
     },

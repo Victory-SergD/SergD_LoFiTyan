@@ -33,7 +33,7 @@ export const zh: Translations = {
             title: '快捷键',
             general: {
                 title: '常规',
-                esc: '隐藏此窗口',
+                esc: '关闭面板 / 退出全屏',
                 j: '打开/关闭设置',
                 immersive: '切换宽敞模式',
                 next_bg: '下一张背景图片',
@@ -59,6 +59,7 @@ export const zh: Translations = {
         more: '更多',
         favorites: '收藏',
         empty_favorites: '暂无收藏 — 点击 ☆ 添加',
+        empty_results: '未找到电台',
         loading: '加载中…',
         retry: '点击重试',
     },

@@ -96,6 +96,8 @@
     background-color: ${isStorming ? "white" : "transparent"};
     `}
   on:click={toggleThunder}
+  aria-label="Toggle thunder"
+  aria-pressed={isStorming}
 >
   <IconCloudStorm size={25} color={isStorming ? "black" : "white"} />
 </button>

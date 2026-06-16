@@ -98,6 +98,8 @@
       background-color: ${isRaining ? "white" : "transparent"};
       `}
     on:click={toggleRain}
+    aria-label="Toggle rain"
+    aria-pressed={isRaining}
   >
     <IconCloudRain size={25} color={isRaining ? "black" : "white"} />
   </button>

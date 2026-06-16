@@ -33,7 +33,7 @@ export const ja: Translations = {
             title: 'ショートカット',
             general: {
                 title: '一般',
-                esc: 'このウィンドウを隠す',
+                esc: 'パネルを閉じる / フルスクリーン終了',
                 j: '設定を開く/閉じる',
                 immersive: '広々モードを切り替え',
                 next_bg: '次の背景画像',
@@ -59,6 +59,7 @@ export const ja: Translations = {
         more: 'もっと',
         favorites: 'お気に入り',
         empty_favorites: 'まだありません — ☆ をタップして追加',
+        empty_results: 'ステーションが見つかりません',
         loading: '読み込み中…',
         retry: 'タップして再試行',
     },

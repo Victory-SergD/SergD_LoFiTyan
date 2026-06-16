@@ -31,7 +31,7 @@ export const en = {
             title: 'Shortcuts',
             general: {
                 title: 'General',
-                esc: 'Hide this window',
+                esc: 'Close panel / exit fullscreen',
                 j: 'Open/close Settings',
                 immersive: 'Toggle spacious mode',
                 next_bg: 'Next Background Image',
@@ -57,6 +57,7 @@ export const en = {
         more: 'More',
         favorites: 'Favorites',
         empty_favorites: 'No favorites yet — tap ☆ to add',
+        empty_results: 'No stations found',
         loading: 'Loading…',
         retry: 'Tap to retry',
     },
