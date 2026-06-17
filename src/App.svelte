@@ -13,6 +13,7 @@
   import { initRadio, togglePlay, pause } from "./lib/stores/radio";
   import { fullscreen, exitFullscreen, initFullscreenSync } from "./lib/stores/fullscreen";
   import { closePicker } from "./lib/stores/picker";
+  import { infoOpen, settingsOpen } from "./lib/stores/ui";
   import { isTypingTarget } from "./lib/utils/dom";
   import Canvas from "./lib/components/Canvas/index.svelte";
   import { setBgMedia, getTransform, hasTransform, saveTransform } from "./lib/stores/background";
@@ -93,11 +94,13 @@
 
     const savedBgType = localStorage.getItem("bg-type");
 
-    if (savedBgType === null) {
-      // First ever launch → the bundled character video is the default scene
-      // (so a fresh user immediately sees the LoFi-тян, not an empty image).
+    if (savedBgType === null || savedBgType === "default-video") {
+      // First launch (or the saved default-video scene) → the bundled character
+      // video (so a fresh user immediately sees the LoFi-тян, not an empty image).
+      // Persist it so Settings → Background keeps it instead of clobbering with bg1.
       const tv = getTransform("default_video");
       setBgMedia("video", "assets/default-bg/lofi-girl-autumn.mp4", tv.focalX, tv.focalY, tv.scale);
+      localStorage.setItem("bg-type", "default-video");
     } else if (savedBgType === "custom") {
       const customBgId = localStorage.getItem("custom-bg-id");
       if (customBgId) {
@@ -174,8 +177,12 @@
       <Info />
     </section>
     <!-- RadioPlayer lives inside `.chrome` so it auto-hides with the rest of the
-         chrome in immersive mode, per the user's KEEP-immersion request. -->
-    <RadioPlayer />
+         chrome in immersive mode, per the user's KEEP-immersion request.
+         Hidden while the About/shortcuts box is open so the transport + station
+         chip don't clutter the menu. -->
+    {#if !$infoOpen && !$settingsOpen}
+      <RadioPlayer />
+    {/if}
   </div>
   <!-- StationPicker lives OUTSIDE .chrome so it is never hidden/disabled by the
        auto-hide (immersive opacity:0 + pointer-events:none). -->

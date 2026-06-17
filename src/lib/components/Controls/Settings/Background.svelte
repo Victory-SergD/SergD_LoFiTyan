@@ -46,8 +46,17 @@
   let mediaH = 9;
   let metaReady = false;
 
+  // Bundled default character video — a built-in, always-available scene.
+  const DEFAULT_VIDEO_ID = "default_video";
+  const DEFAULT_VIDEO_SRC = "assets/default-bg/lofi-girl-autumn.mp4";
+
   // reactive current background id for transform persistence
-  $: curId = bgType === "custom" && customBgId ? customBgId : `default_${id}`;
+  $: curId =
+    bgType === "default-video"
+      ? DEFAULT_VIDEO_ID
+      : bgType === "custom" && customBgId
+        ? customBgId
+        : `default_${id}`;
 
   onMount(async () => {
     await loadCustomBackgrounds();
@@ -120,6 +129,15 @@
 
   function buildAllBackgrounds() {
     allBackgrounds = [];
+
+    // The bundled default character video — always first, always available.
+    allBackgrounds.push({
+      id: DEFAULT_VIDEO_ID,
+      type: "default-video",
+      kind: "video",
+      name: "LoFi-тян",
+      url: DEFAULT_VIDEO_SRC,
+    });
 
     for (let i = 1; i <= 10; i++) {
       allBackgrounds.push({
@@ -285,7 +303,22 @@
     localStorage.setItem("custom-bg-id", item.id);
   }
 
+  function applyDefaultVideo() {
+    metaReady = false;
+    const tr = getTransform(DEFAULT_VIDEO_ID);
+    setBgMedia("video", DEFAULT_VIDEO_SRC, tr.focalX, tr.focalY, tr.scale);
+    id = DEFAULT_VIDEO_ID;
+    bgType = "default-video";
+    customBgId = null;
+    localStorage.setItem("bg-type", "default-video");
+    localStorage.removeItem("custom-bg-id");
+  }
+
   function applyCurrentBackground() {
+    if (bgType === "default-video") {
+      applyDefaultVideo();
+      return;
+    }
     if (bgType === "custom" && customBgId) {
       const customBg = customBackgrounds.find((bg) => bg.id === customBgId);
       if (customBg) {
@@ -306,39 +339,44 @@
     setBgMedia("image", `assets/background/bg${id}.webp`, tr.focalX, tr.focalY, tr.scale);
   }
 
-  function nextBg() {
-    buildAllBackgrounds();
-    const currentIndex = getCurrentIndex();
-    const idx = (currentIndex + 1) % allBackgrounds.length;
-    const target = allBackgrounds[idx];
-    if (target.kind === "video") {
+  function applyTarget(target: any) {
+    if (target.type === "default-video" || target.id === DEFAULT_VIDEO_ID) {
+      applyDefaultVideo();
+    } else if (target.kind === "video") {
       const originalItem = customBackgrounds.find((b) => b.id === target.id);
       if (originalItem) applyVideoItem(originalItem);
     } else {
       applyBackground(target);
     }
+  }
+
+  function nextBg() {
+    buildAllBackgrounds();
+    const currentIndex = getCurrentIndex();
+    const idx = (currentIndex + 1) % allBackgrounds.length;
+    applyTarget(allBackgrounds[idx]);
   }
 
   function prevBg() {
     buildAllBackgrounds();
     const currentIndex = getCurrentIndex();
     const prevIndex = currentIndex === 0 ? allBackgrounds.length - 1 : currentIndex - 1;
-    const target = allBackgrounds[prevIndex];
-    if (target.kind === "video") {
-      const originalItem = customBackgrounds.find((b) => b.id === target.id);
-      if (originalItem) applyVideoItem(originalItem);
-    } else {
-      applyBackground(target);
-    }
+    applyTarget(allBackgrounds[prevIndex]);
   }
 
   function getCurrentIndex(): number {
+    if (bgType === "default-video")
+      return allBackgrounds.findIndex((bg) => bg.id === DEFAULT_VIDEO_ID);
     if (bgType === "custom" && customBgId)
       return allBackgrounds.findIndex((bg) => bg.id === customBgId);
     return allBackgrounds.findIndex((bg) => bg.id === `default_${id}`);
   }
 
   function applyBackground(background: any) {
+    if (background.type === "default-video") {
+      applyDefaultVideo();
+      return;
+    }
     metaReady = false;
     isTransitioning = true;
 
@@ -452,6 +490,7 @@
     {#if allBackgrounds.length > 0}
       {@const currentBg = allBackgrounds.find(
         (bg) =>
+          (bgType === "default-video" && bg.id === DEFAULT_VIDEO_ID) ||
           (bgType === "custom" && bg.id === customBgId) ||
           (bgType === "default" && bg.id === `default_${id}`),
       )}
