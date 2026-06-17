@@ -92,6 +92,18 @@
     document.documentElement.dir = $dir;
     document.documentElement.lang = $locale;
 
+    // One-time migration: earlier betas (a now-fixed bug) could persist
+    // bg-type="default" (a still image) even though the bundled LoFi-тян video
+    // is the intended default. Reset such stale states to the video once, so
+    // upgraders see it too. Custom backgrounds are left untouched.
+    if (!localStorage.getItem("lofityan.bg-default-v2")) {
+      localStorage.setItem("lofityan.bg-default-v2", "1");
+      if ((localStorage.getItem("bg-type") || "default") === "default") {
+        localStorage.setItem("bg-type", "default-video");
+        localStorage.removeItem("bg-id");
+      }
+    }
+
     const savedBgType = localStorage.getItem("bg-type");
 
     if (savedBgType === null || savedBgType === "default-video") {

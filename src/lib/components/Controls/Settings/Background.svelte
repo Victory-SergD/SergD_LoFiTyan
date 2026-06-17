@@ -681,6 +681,9 @@
     align-items: center;
     gap: 20px;
     justify-content: center;
+    /* Reserve the 16:9 preview height so a wider background (e.g. bg8 at
+       1.99:1) doesn't shrink this row and shift the settings below it. */
+    min-height: 124px;
   }
 
   .preview-container {
