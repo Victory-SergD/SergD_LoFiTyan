@@ -24,10 +24,10 @@
     <IconBrandGithub size={25} />
   </a>
   <a
-    href="https://t.me/sergei_dyshkant"
+    href="https://t.me/SergD_leads"
     target="_blank"
-    data-tooltip="Telegram: @sergei_dyshkant"
-    on:click={(e) => openExternal(e, "https://t.me/sergei_dyshkant")}
+    data-tooltip="Telegram: @SergD_leads"
+    on:click={(e) => openExternal(e, "https://t.me/SergD_leads")}
   >
     <IconBrandTelegram size={25} />
   </a>

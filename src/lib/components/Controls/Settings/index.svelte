@@ -107,8 +107,8 @@
             </button>
             <button
               type="button"
-              data-tooltip="Telegram: @sergei_dyshkant"
-              on:click={() => void openExternal("https://t.me/sergei_dyshkant")}
+              data-tooltip="Telegram: @SergD_leads"
+              on:click={() => void openExternal("https://t.me/SergD_leads")}
             >
               <IconBrandTelegram size={18} />
             </button>
