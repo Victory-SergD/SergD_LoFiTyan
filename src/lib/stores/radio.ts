@@ -30,11 +30,12 @@ export const GENRE_TAG: Record<Genre, string> = {
 // -> the picker shows a default icon. These ship in-app, work even if the API is down.
 export const SEED: Record<Genre, RadioStation[]> = {
   "Lo-Fi": [
-    { id: "reyfm-lofi", name: "REYFM #LOFI", url: "https://listen.reyfm.de/lofi_320kbps.mp3", favicon: "", codec: "MP3", bitrate: 320, tags: "lofi" },
-    { id: "ilm-chillhop", name: "I ♥ Chillhop", url: "https://ilm.stream35.radiohost.de/ilm_ilovechillhop_mp3-192", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi,chillhop" },
+    // Lofi Cafe · Chilling is the default first station — clean, ad-free.
     { id: "loficafe-chilling", name: "Lofi Cafe · Chilling", url: "https://radio.loficafe.net/listen/chilling/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi" },
+    { id: "ilm-chillhop", name: "I ♥ Chillhop", url: "https://ilm.stream35.radiohost.de/ilm_ilovechillhop_mp3-192", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi,chillhop" },
     { id: "nia-lofi", name: "NIA Radio Lo-Fi", url: "https://radio.nia.nc/radio/8020/lofi-hq-stream.aac", favicon: "", codec: "AAC", bitrate: 128, tags: "lofi" },
     { id: "loficafe-gaming", name: "Lofi Cafe · Gaming", url: "https://radio.loficafe.net/listen/gaming/radio.mp3", favicon: "", codec: "MP3", bitrate: 192, tags: "lofi" },
+    { id: "reyfm-lofi", name: "REYFM #LOFI", url: "https://listen.reyfm.de/lofi_320kbps.mp3", favicon: "", codec: "MP3", bitrate: 320, tags: "lofi" },
   ],
   "Chillhop": [
     { id: "radio-acid", name: "Radio ACID · Chill", url: "https://stream.radioacid.com/stream", favicon: "", codec: "MP3", bitrate: 256, tags: "chillhop" },
@@ -241,6 +242,7 @@ function ensureAudio(): HTMLAudioElement {
 export async function play(station: RadioStation): Promise<void> {
   const el = ensureAudio();
   current.set(station);
+  updateMediaMetadata(station);
   error.set(null);
   buffering.set(true);
   el.src = station.url;
@@ -248,6 +250,7 @@ export async function play(station: RadioStation): Promise<void> {
   try {
     await el.play();
     isPlaying.set(true);
+    setPlaybackState("playing");
   } catch (e) {
     // Switching stations changes `el.src` mid-load, so the webview rejects the
     // previous in-flight play() with an AbortError ("The operation was aborted").
@@ -305,21 +308,66 @@ export function selectStation(s: RadioStation, list?: RadioStation[], source: Qu
   void play(s);
 }
 
-/** Restore the last-played station (paused) on launch. No network, no autoplay. */
+// ---- OS media keys (F7/F8/F9, Bluetooth, headset) via the MediaSession API ----
+function setupMediaSession(): void {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+  try {
+    const ms = navigator.mediaSession;
+    ms.setActionHandler("play", () => togglePlay());
+    ms.setActionHandler("pause", () => pause());
+    ms.setActionHandler("previoustrack", () => playPrev());
+    ms.setActionHandler("nexttrack", () => playNext());
+  } catch {
+    /* a handler may be unsupported on this platform — ignore */
+  }
+}
+
+function updateMediaMetadata(station: RadioStation): void {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: station.name,
+      artist: "LoFiTyan",
+    });
+  } catch {
+    /* MediaMetadata may be unavailable (e.g. jsdom) — ignore */
+  }
+}
+
+function setPlaybackState(state: "playing" | "paused" | "none"): void {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+  try {
+    navigator.mediaSession.playbackState = state;
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Restore the last-played station (paused) on launch, or default to
+ * Lofi Cafe · Chilling on first launch — never an ad-heavy stream. No network,
+ * no autoplay. Also wires the OS media keys (play/pause/prev/next) to the radio.
+ */
 export function initRadio(): void {
+  setupMediaSession();
   try {
     const raw = localStorage.getItem(LAST_KEY);
-    if (!raw) return;
-    const s = JSON.parse(raw) as RadioStation;
-    if (s && typeof s.url === "string" && s.url.startsWith("https://")) {
-      current.set(s);
-      // Seed the ◀ ▶ queue with the genre the restored station belongs to, so
-      // the arrows work immediately on launch without opening the picker.
-      queue.set(seedGenreOf(s) ?? [s]);
+    if (raw) {
+      const s = JSON.parse(raw) as RadioStation;
+      if (s && typeof s.url === "string" && s.url.startsWith("https://")) {
+        current.set(s);
+        // Seed the ◀ ▶ queue with the genre the restored station belongs to, so
+        // the arrows work immediately on launch without opening the picker.
+        queue.set(seedGenreOf(s) ?? [s]);
+        return;
+      }
     }
   } catch {
     /* ignore */
   }
+  // First launch (or unusable saved station): default to Lofi Cafe · Chilling.
+  current.set(SEED["Lo-Fi"][0]);
+  queue.set(SEED["Lo-Fi"]);
 }
 
 /** Pause the current stream. Leaves `current` intact so it can be resumed. */
@@ -329,6 +377,7 @@ export function pause(): void {
   }
   isPlaying.set(false);
   buffering.set(false);
+  setPlaybackState("paused");
 }
 
 /**

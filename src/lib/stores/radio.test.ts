@@ -548,6 +548,10 @@ describe("station picker store", () => {
     const mod = await import("./radio");
     mod.initRadio();
 
-    expect(get(mod.current)).toBeNull();
+    // The insecure (non-HTTPS) station is ignored; initRadio falls back to the
+    // ad-free default station instead of using the rejected one.
+    const cur = get(mod.current);
+    expect(cur?.id).not.toBe("insecure");
+    expect(cur?.url.startsWith("https://")).toBe(true);
   });
 });
