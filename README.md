@@ -7,7 +7,15 @@
   Настоящее lo-fi радио + атмосфера для работы, учёбы и вечернего чилла — в уютном окне с персонажем.
 </p>
 
-<p align="center"><img src="screenshots/screenshot.jpeg" alt="Скриншот LoFiTyan" /></p>
+<p align="center"><img src="screenshots/main.jpeg" alt="LoFiTyan — lo-fi радио + живые обои с атмосферой дождя" width="820" /></p>
+
+<p align="center">
+  <img src="screenshots/settings.jpeg" alt="Настройки: фон, громкость, язык" height="300" />
+  &nbsp;&nbsp;
+  <img src="screenshots/vertical.jpeg" alt="Вертикальный режим под портретный монитор" height="300" />
+</p>
+
+<p align="center"><sub>Настоящее lo-fi радио поверх живой сцены · настройки фона/громкости/языка · вертикальный режим под портретный монитор.</sub></p>
 
 > 🛠️ Проект **Victory**. Развитие открытого [lofi-engine](https://github.com/meel-hd/lofi-engine) (MIT).
 > Мы превратили его в плеер **настоящего lo-fi радио** с атмосферой, персонажем-фоном и вертикальным режимом.
