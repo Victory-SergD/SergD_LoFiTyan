@@ -34,8 +34,8 @@
   let bgType = localStorage.getItem("bg-type") || "default";
   let customBgId = localStorage.getItem("custom-bg-id");
 
-  let customBackgrounds = [];
-  let allBackgrounds = [];
+  let customBackgrounds: Array<{ id: string; name: string; kind?: string; path?: string; dataUrl?: string; focalX?: number; focalY?: number }> = [];
+  let allBackgrounds: Array<{ id: string; type: string; name: string; url?: string; kind?: string; path?: string; focalX?: number; focalY?: number }> = [];
   let isUploading = false;
   let isTransitioning = false;
   let uploadErrors: string[] = [];
@@ -293,7 +293,7 @@
           applyVideoItem(customBg);
         } else {
           const tr = getTransform(customBg.id);
-          setBgMedia("image", customBg.dataUrl, tr.focalX, tr.focalY, tr.scale);
+          setBgMedia("image", customBg.dataUrl ?? "", tr.focalX, tr.focalY, tr.scale);
         }
         return;
       } else {
@@ -362,7 +362,7 @@
       customBgId = background.id;
       bgType = "custom";
       localStorage.setItem("bg-type", "custom");
-      localStorage.setItem("custom-bg-id", customBgId);
+      localStorage.setItem("custom-bg-id", customBgId ?? "");
       const tr = getTransform(background.id);
       setBgMedia("image", background.url, tr.focalX, tr.focalY, tr.scale);
     }
@@ -372,7 +372,7 @@
     bgType = "custom";
     customBgId = event.detail.id;
     localStorage.setItem("bg-type", "custom");
-    localStorage.setItem("custom-bg-id", customBgId);
+    localStorage.setItem("custom-bg-id", customBgId ?? "");
   };
 
   const onBackgroundsUpdated = async () => {

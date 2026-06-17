@@ -4,7 +4,7 @@
   
   let isMaximized = false;
 
-  export let appWindow;
+  export let appWindow: any;
   export let noSideEffect = false;
 
   async function syncMaximized() {
@@ -18,6 +18,7 @@
     const close = document.getElementById("close-maximaze-wl");
     const minimize = document.getElementById("minimize-wl");
     const maximize = document.getElementById("maximaze-wl");
+    if (!close || !minimize || !maximize) return;
 
     const onClose = () => appWindow.close();
     const onMinimize = () => appWindow.minimize();

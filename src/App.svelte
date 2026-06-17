@@ -159,6 +159,7 @@
   <RainAnimation />
   <!-- While the pointer is over any control, pause the auto-hide so controls are
        never hidden out from under the cursor (BUG A). -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="chrome"
     on:pointerenter={pauseIdleWatch}
