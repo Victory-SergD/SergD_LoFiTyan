@@ -41,7 +41,7 @@ export const nl: Translations = {
                 title: 'Algemeen',
                 esc: 'Paneel sluiten / volledig scherm verlaten',
                 j: 'Open/sluit instellingen',
-                immersive: 'Ruime modus wisselen',
+                immersive: 'Interface verbergen',
                 next_bg: 'Volgende achtergrondafbeelding',
                 prev_bg: 'Vorige achtergrondafbeelding',
                 restart: 'Herstarten',

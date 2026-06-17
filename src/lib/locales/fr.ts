@@ -41,7 +41,7 @@ export const fr: Translations = {
                 title: 'Général',
                 esc: 'Fermer le panneau / quitter le plein écran',
                 j: 'Ouvrir/fermer les paramètres',
-                immersive: 'Basculer le mode spacieux',
+                immersive: "Masquer l'interface",
                 next_bg: "Image d'arrière-plan suivante",
                 prev_bg: "Image d'arrière-plan précédente",
                 restart: 'Redémarrer',

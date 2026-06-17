@@ -69,7 +69,7 @@
   .shortcuts {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.4rem;
     padding: 0 10px;
   }
   h4,

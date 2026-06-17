@@ -93,11 +93,11 @@
 
 <style>
   .info-overlay {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     z-index: 99; /* on top of everything and under topbar(100 z-index) */
     display: flex;
     justify-content: center;
@@ -107,15 +107,18 @@
     padding: 0px 15px;
     color: white;
     border-radius: 20px;
-    width: 55vw;
-    height: 75vh;
+    width: 60vw;
+    height: 88vh;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   #top-section {
     display: flex;
     justify-content: space-between;
     margin-top: 5px;
     position: relative;
+    flex-shrink: 0;
   }
   #close-btn {
     position: absolute;
@@ -150,9 +153,9 @@
     margin: 5px 10px;
   }
   #bottom-section {
-    overflow: hidden;
-    overflow-y: scroll;
-    height: 45vh;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
   }
   img {
     aspect-ratio: 1/1;
@@ -163,7 +166,7 @@
     border-radius: 20px;
   }
 
-  @media only screen and (max-width: 600px) {
+  @media only screen and (max-width: 480px) {
     #info-box {
       width: 90vw;
     }

@@ -39,7 +39,7 @@ export const en = {
                 title: 'General',
                 esc: 'Close panel / exit fullscreen',
                 j: 'Open/close Settings',
-                immersive: 'Toggle spacious mode',
+                immersive: 'Hide interface',
                 next_bg: 'Next Background Image',
                 prev_bg: 'Previous Background Image',
                 restart: 'Restart',

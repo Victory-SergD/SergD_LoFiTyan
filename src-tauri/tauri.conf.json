@@ -28,10 +28,10 @@
       {
         "fullscreen": false,
         "title": "LoFiTyan",
-        "width": 600,
-        "height": 920,
-        "minWidth": 480,
-        "minHeight": 680,
+        "width": 680,
+        "height": 940,
+        "minWidth": 560,
+        "minHeight": 700,
         "resizable": true,
         "decorations": false,
         "transparent": true

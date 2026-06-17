@@ -41,7 +41,7 @@ export const ja: Translations = {
                 title: '一般',
                 esc: 'パネルを閉じる / フルスクリーン終了',
                 j: '設定を開く/閉じる',
-                immersive: '広々モードを切り替え',
+                immersive: 'インターフェースを隠す',
                 next_bg: '次の背景画像',
                 prev_bg: '前の背景画像',
                 restart: '再起動',

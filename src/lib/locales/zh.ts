@@ -41,7 +41,7 @@ export const zh: Translations = {
                 title: '常规',
                 esc: '关闭面板 / 退出全屏',
                 j: '打开/关闭设置',
-                immersive: '切换宽敞模式',
+                immersive: '隐藏界面',
                 next_bg: '下一张背景图片',
                 prev_bg: '上一张背景图片',
                 restart: '重新开始',
