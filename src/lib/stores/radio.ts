@@ -350,6 +350,21 @@ function setPlaybackState(state: "playing" | "paused" | "none"): void {
  */
 export function initRadio(): void {
   setupMediaSession();
+  // One-time migration: an early beta auto-saved REYFM (the old #1 station, which
+  // opens with ad jingles) as the last station. Clear that stale value once so it
+  // can't override the new ad-free default (Lofi Cafe · Chilling). Any station the
+  // user picks after this is still remembered normally.
+  try {
+    if (!localStorage.getItem("lofityan.station-v2")) {
+      localStorage.setItem("lofityan.station-v2", "1");
+      const stale = localStorage.getItem(LAST_KEY);
+      if (stale && (JSON.parse(stale) as RadioStation)?.id === "reyfm-lofi") {
+        localStorage.removeItem(LAST_KEY);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
   try {
     const raw = localStorage.getItem(LAST_KEY);
     if (raw) {
