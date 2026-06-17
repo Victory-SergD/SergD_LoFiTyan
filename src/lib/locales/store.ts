@@ -18,7 +18,15 @@ const locales: Record<string, Translations> = {
     ru,
 };
 
-const initialLocale = localStorage.getItem('locale') || 'en';
+function detectInitialLocale(): string {
+    const saved = localStorage.getItem('locale');
+    if (saved && locales[saved]) return saved;
+    // First launch: follow the OS/browser language if we have it, else English.
+    const sys = (navigator.language || 'en').toLowerCase().split('-')[0];
+    return locales[sys] ? sys : 'en';
+}
+
+const initialLocale = detectInitialLocale();
 
 export const locale = writable<string>(initialLocale);
 

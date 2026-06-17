@@ -91,9 +91,14 @@
     document.documentElement.dir = $dir;
     document.documentElement.lang = $locale;
 
-    const bgType = localStorage.getItem("bg-type") || "default";
+    const savedBgType = localStorage.getItem("bg-type");
 
-    if (bgType === "custom") {
+    if (savedBgType === null) {
+      // First ever launch → the bundled character video is the default scene
+      // (so a fresh user immediately sees the LoFi-тян, not an empty image).
+      const tv = getTransform("default_video");
+      setBgMedia("video", "assets/default-bg/lofi-girl-autumn.mp4", tv.focalX, tv.focalY, tv.scale);
+    } else if (savedBgType === "custom") {
       const customBgId = localStorage.getItem("custom-bg-id");
       if (customBgId) {
         import("./lib/localDB").then(async ({ default: localDB }) => {

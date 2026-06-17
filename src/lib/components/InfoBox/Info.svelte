@@ -73,10 +73,10 @@
           {/if}
         </button>
         <div id="app-info">
-          <img id="app-logo" src="LofiEngine.png" alt="" />
+          <img id="app-logo" src="lofityan-logo.png" alt="LoFiTyan" />
           <div>
             <h1>{$t.info.title}</h1>
-            <p id="version">Version 1.0.0-beta</p>
+            <p id="version">Version 1.0.0-beta.2</p>
             <p id="tagline">
               {$t.info.tagline}
             </p>

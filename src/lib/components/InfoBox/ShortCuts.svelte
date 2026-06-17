@@ -1,6 +1,10 @@
 <script lang="ts">
   import { IconArrowLeft, IconArrowRight } from "@tabler/icons-svelte";
   import { t } from "../../locales/store";
+
+  // Show the right modifier per OS: ⌘ on macOS, Ctrl on Windows/Linux.
+  const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
+  const mod = isMac ? "⌘" : "Ctrl";
 </script>
 
 <div class="shortcuts">
@@ -16,7 +20,7 @@
     <div class="shortcut-desc">{$t.info.shortcuts.general.j}</div>
   </div>
   <div class="shortcut">
-    <div class="shortcut-key">Ctrl/⌘ + I</div>
+    <div class="shortcut-key">{mod} + I</div>
     <div class="shortcut-desc">{$t.info.shortcuts.general.immersive}</div>
   </div>
   <div class="shortcut">
@@ -28,7 +32,7 @@
     <div class="shortcut-desc">{$t.info.shortcuts.general.prev_bg}</div>
   </div>
   <div class="shortcut">
-    <div class="shortcut-key">Ctrl + R</div>
+    <div class="shortcut-key">{mod} + R</div>
     <div class="shortcut-desc">{$t.info.shortcuts.general.restart}</div>
   </div>
 
