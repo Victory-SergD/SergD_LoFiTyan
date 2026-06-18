@@ -7,6 +7,20 @@
   Настоящее lo-fi радио + атмосфера для работы, учёбы и вечернего чилла — в уютном окне с персонажем.
 </p>
 
+<p align="center">
+  <a href="https://github.com/Victory-SergD/SergD_LoFiTyan/releases/latest"><img src="https://img.shields.io/github/v/release/Victory-SergD/SergD_LoFiTyan?include_prereleases&sort=semver&color=8b5cf6&label=релиз" alt="Release" /></a>
+  <a href="https://github.com/Victory-SergD/SergD_LoFiTyan/releases"><img src="https://img.shields.io/github/downloads/Victory-SergD/SergD_LoFiTyan/total?color=8b5cf6&label=скачиваний" alt="Downloads" /></a>
+  <img src="https://img.shields.io/badge/macOS%20·%20Windows%20·%20Linux-8b5cf6" alt="Platforms" />
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Victory-SergD/SergD_LoFiTyan?color=8b5cf6" alt="MIT" /></a>
+  <a href="https://github.com/Victory-SergD/SergD_LoFiTyan/stargazers"><img src="https://img.shields.io/github/stars/Victory-SergD/SergD_LoFiTyan?style=flat&color=8b5cf6" alt="Stars" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Victory-SergD/SergD_LoFiTyan/releases/latest"><b>⬇️ Скачать — macOS · Windows · Linux</b></a> &nbsp;·&nbsp; <a href="README.en.md">🇬🇧 English</a>
+</p>
+
+<p align="center"><sub>Бесплатная open-source альтернатива Wallpaper Engine · Lofi.co · Noisli.</sub></p>
+
 <p align="center"><img src="screenshots/main.jpeg" alt="LoFiTyan — lo-fi радио + живые обои с атмосферой дождя" width="820" /></p>
 
 <p align="center">
@@ -63,9 +77,11 @@
 > ```
 > После этого LoFiTyan открывается как обычно — двойным кликом. (Способ без Терминала — в шаге 3 ниже.)
 
-> Сейчас готова сборка под **macOS** (Apple Silicon / Intel). Windows и Linux — на подходе; пока их можно собрать из исходников (см. [«Запуск локально»](#-запуск-локально)).
+> Готовы установщики под **macOS** (Apple Silicon / Intel), **Windows** и **Linux** — всё на странице [**Releases**](https://github.com/Victory-SergD/SergD_LoFiTyan/releases/latest).
 
-1. Скачай `LoFiTyan_*.dmg` со страницы [**Releases**](https://github.com/Victory-SergD/SergD_LoFiTyan/releases/latest).
+#### 🍎 macOS
+
+1. Скачай `LoFiTyan_*_aarch64.dmg` (Apple Silicon, M1–M4) или `LoFiTyan_*_x64.dmg` (Intel) со страницы [**Releases**](https://github.com/Victory-SergD/SergD_LoFiTyan/releases/latest).
 2. Открой `.dmg` и перетащи **LoFiTyan** в папку «Программы».
 3. **Первый запуск.** Приложение не подписано сертификатом Apple (это нормально для open-source), поэтому macOS заблокирует его при первом открытии — на macOS 15 (Sequoia) в окне блокировки кнопки «Открыть» нет. Открой одним из способов:
    - **Надёжнее всего — Терминал** (одна команда снимает блокировку), потом открывай как обычно:
@@ -75,7 +91,28 @@
    - **Без Терминала (Sequoia):** в окне блокировки нажми «Готово», затем **Системные настройки → Конфиденциальность и безопасность** → пролистай вниз до «LoFiTyan заблокирован…» → **«Открыть всё равно»** → подтверди вход. Открой приложение ещё раз → появится кнопка «Открыть».
    - На более старых macOS: **правый клик по иконке → «Открыть» → «Открыть»**.
 
+#### 🪟 Windows
+
+1. Скачай `LoFiTyan_*_x64-setup.exe` (или `.msi`) со страницы [Releases](https://github.com/Victory-SergD/SergD_LoFiTyan/releases/latest) и запусти.
+2. Сборка без подписи — Windows SmartScreen может предупредить: нажми **«Подробнее» → «Выполнить в любом случае»**.
+
+#### 🐧 Linux
+
+```bash
+# AppImage (универсально): сделать исполняемым и запустить
+chmod +x LoFiTyan_*.AppImage && ./LoFiTyan_*.AppImage
+
+# Debian / Ubuntu
+sudo apt install ./LoFiTyan_*.deb
+
+# Fedora / RHEL
+sudo rpm -i LoFiTyan_*.rpm
+```
+
 ### 🎬 Живые видео-обои (по желанию)
+
+<p align="center"><img src="screenshots/demo.gif" alt="Дефолтные живые обои LoFiTyan — LoFi-тян, осень" width="640" /></p>
+<p align="center"><sub>↑ Дефолтные живые обои (LoFi-тян, осень) идут в комплекте.</sub></p>
 
 По умолчанию фон — картинка-сцена. Чтобы поставить **живое видео**:
 
