@@ -56,6 +56,11 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: install Windows signing tools (jsign + JDK)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: choco install jsign temurin -y --no-progress
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,6 +72,12 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Windows code-signing via SSL.com eSigner (cloud / jsign). Inert until secrets exist.
+          SIGN_ENABLED: ${{ secrets.SSL_COM_CREDENTIAL_ID != '' }}
+          SSL_COM_USERNAME: ${{ secrets.SSL_COM_USERNAME }}
+          SSL_COM_PASSWORD: ${{ secrets.SSL_COM_PASSWORD }}
+          SSL_COM_CREDENTIAL_ID: ${{ secrets.SSL_COM_CREDENTIAL_ID }}
+          SSL_COM_TOTP_SECRET: ${{ secrets.SSL_COM_TOTP_SECRET }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'LoFiTyan ${{ github.ref_name }}'

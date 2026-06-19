@@ -14,7 +14,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "targets": "all"
+    "targets": "all",
+    "windows": {
+      "signCommand": {
+        "cmd": "python",
+        "args": ["scripts/sign_windows.py", "%1"]
+      }
+    }
   },
   "productName": "LoFiTyan",
   "mainBinaryName": "LoFiTyan",
